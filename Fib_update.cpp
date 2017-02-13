@@ -172,6 +172,11 @@ void Fib::Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pRibLa
 	if(pMostBNCF==pFibLast)    //all nodes' nexthop set don't change,so exit.
 		return ;
 	
+
+
+	//select precess
+	int startBit=(int)strlen(insert_C)-outFibDeep-goTopLevel;
+	int endBit=startBit+goTopLevel;
 	if(pMostBNCF==NULL)
 	{
 		inheritOldHopFib=DEFAULTHOP-1;
@@ -183,21 +188,37 @@ void Fib::Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pRibLa
 		inheritOldHopFib=GetAncestorHop(pMostBNCF);
 		inheritNewHopFib=inheritOldHopFib;
 		pMostBNCF=pMostTCF;
+		startBit=startBit+1;
 	}
-
-
-	//select precess
-	int startBit=(int)strlen(insert_C)-outFibDeep-goTopLevel;
-	for(int i=startBit;i<goTopLevel;i++)
+	bool clearAlongPath;
+	for(int i=startBit;i<endBit;i++)
 	{
+		clearAlongPath=true;
+		if(pMostBNCF->iNewPort!=EMPTYHOP)
+			inheritOldHopFib=pMostBNCF->iNewPort;
+		if(pMostBNCF->intersection)
+		{
+			if(!ifcontainFunc(inheritNewHopFib,pMostBNCF->pNextHop))
+			{
+				pMostBNCF->iNewPort=pMostBNCF->pNextHop->iVal;
+				inheritNewHopFib=pMostBNCF->iNewPort;
+				clearAlongPath=false;
+			}
+		}
+		if(clearAlongPath)
+			pMostBNCF->iNewPort=EMPTYHOP;
 		if('0'==insert_C[i])
 		{
-
+			NsNoChange_common_select(pMostBNCF->pRightChild,inheritOldHopFib,inheritNewHopFib);
+			pMostBNCF=pMostBNCF->pLeftChild;
 		}
 		else
 		{
+			NsNoChange_common_select(pMostBNCF->pLeftChild,inheritOldHopFib,inheritNewHopFib);
+			pMostBNCF=pMostBNCF->pRightChild;
 		}
 	}
+	PassThree(pMostBNCF,inheritNewHopFib);
 }
 
 void Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
