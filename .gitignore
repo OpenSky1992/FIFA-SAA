@@ -1,0 +1,4 @@
+*.txt
+*.vcxproj
+*.vcxproj.filters
+Debug/
