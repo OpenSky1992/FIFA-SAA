@@ -84,9 +84,10 @@ FibTrie* Fib::LastVisitNode(int iNextHop,char *insert_C,int &outNumber)
 		insertNode->pNextHop->iVal=iNextHop;
 		if(iNextHop!=pLastVisit->pNextHop->iVal)
 		{
-			insertNode->iNewPort=iNextHop;//for outDeep>=2
 			if(outDeep==1)
 				pLastVisit->intersection=false;
+			else //for outDeep>=2
+				insertNode->iNewPort=iNextHop;
 		}
 	}
 	return pLastVisit;
