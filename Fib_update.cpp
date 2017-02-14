@@ -54,7 +54,7 @@ FibTrie* Fib::LastVisitNode(int iNextHop,char *insert_C,int &outNumber)
 				outDeep++;
 			}
 			else
-				pLastVisit=insertNode;
+				pLastVisit=insertNode->pLeftChild;
 			insertNode=insertNode->pLeftChild;
 		}
 		else
@@ -73,7 +73,7 @@ FibTrie* Fib::LastVisitNode(int iNextHop,char *insert_C,int &outNumber)
 				outDeep++;
 			}
 			else
-				pLastVisit=insertNode;
+				pLastVisit=insertNode->pRightChild;
 			insertNode=insertNode->pRightChild;
 		}
 	}
@@ -84,7 +84,7 @@ FibTrie* Fib::LastVisitNode(int iNextHop,char *insert_C,int &outNumber)
 		insertNode->pNextHop->iVal=iNextHop;
 		if(iNextHop!=pLastVisit->pNextHop->iVal)
 		{
-			insertNode->iNewPort=iNextHop;
+			insertNode->iNewPort=iNextHop;//for outDeep>=2
 			if(outDeep==1)
 				pLastVisit->intersection=false;
 		}
@@ -109,6 +109,7 @@ NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 		 else
 			 pCopy->pNext=pNHop;
 		 pCopy=pNHop;
+		 pOld=pOld->pNext;
 	}
 	return pCopyHead;
 }

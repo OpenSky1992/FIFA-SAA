@@ -17,7 +17,6 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 	unsigned int	iNextHop;			//to store NEXTHOP in RIB file
 
 	char			operate_type_read;
-	int 			operate_type;
 	int				readlines=0;
 	long			updatetimeused=0;
 
@@ -30,7 +29,7 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 	{
 		printf("!!!error!!!!  no file named:%s\n",sFileName);
 	}
-	printf("parsing %s\n",sFileName);
+	cout<<"parsing file:"<<sFileName;
 
 	while (!fin.eof()) 
 	{
@@ -41,6 +40,8 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		memset(sPrefix,0,sizeof(sPrefix));
 		fin >> yearmonthday >> hourminsec >> operate_type_read >> sPrefix;//>> iNextHop;
 
+		if('A'==operate_type_read)
+			fin>>iNextHop;
 		if('W'!=operate_type_read&&'A'!=operate_type_read)
 		{
 			printf("Format of update file Error, quit....\n");
