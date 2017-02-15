@@ -36,9 +36,15 @@ public:
 
 
 private:
+	//Data fib trie
 	FibTrie* m_pTrie;	
+	//data come from parameter
+	int update_iNextHop,update_outDeepRib,update_inheritHopRib;
+	char *update_insert_C;
+	char update_operation_type;
+	RibTrie* update_pLastRib;
 
-
+	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
 	void CreateNewNode(FibTrie* &pTrie);
@@ -54,8 +60,9 @@ private:
 	void NextHopMerge(FibTrie *pTrie);
 
 	//update function
-	FibTrie* LastVisitNode(int iNextHop,char *insert_C,int &outNumber);
-	void UpdateGoUp();
+	void update_process();
+	FibTrie *LastVisitNode(int &outDeepFib);
+	void update_NextHopSet(FibTrie *,int outDeepFib);
 	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
 	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC
