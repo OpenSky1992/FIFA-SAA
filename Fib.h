@@ -19,23 +19,27 @@ struct FibTrie
 	FibTrie*	pLeftChild;					//point to left child
 	FibTrie*	pRightChild;				//point to right child
 	int			iNewPort;					//new port
-	bool		intersection;				//intersection and union
-	struct NextHop* pNextHop;							//Nexthop set
+	bool		intersection;				//record intersection or union
+	bool		is_NNC_area;				//for update,NCC: Nexthop set No Change
+	struct NextHop* pNextHop;				//Nexthop set
 };
 
 class Fib
 {
 public:
-	FibTrie* m_pTrie;	
-
 	Fib(void);
 	~Fib(void);
 	void Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pLastRib,int outRibDeep,int inheritHop);	
-	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
+	void ConstructFromRib(RibTrie* pRibTrie);
 	void Compress();
 
+
+
 private:
-	
+	FibTrie* m_pTrie;	
+
+
+	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
 	void CreateNewNode(FibTrie* &pTrie);
 	void PassOneTwo(FibTrie *pTrie);    //this function only be called by function compress
@@ -49,9 +53,10 @@ private:
 	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
 	void NextHopMerge(FibTrie *pTrie);
 
+	//update function
 	FibTrie* LastVisitNode(int iNextHop,char *insert_C,int &outNumber);
 	void UpdateGoUp();
-	void updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
+	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
 	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC
 	void NNC_SS_Double_search(FibTrie *pFib,int oldHop,int newHop);

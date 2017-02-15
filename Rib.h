@@ -22,13 +22,15 @@ class Rib
 public:
 	Rib(void);
 	~Rib(void);
-
-	RibTrie* m_pTrie;				//RibTrie
-	//int update_oldport;	
-	
 	unsigned int BuildRibFromFile(string sFileName);
+	unsigned int ConvertBinToIP(string sBinFile,string sIpFile);
 	RibTrie* Update(int iNextHop,char *insert_C,char operation_type,int &out,int &inheritHop);
+	RibTrie* getRibTrie();
+
+
 private:
+	RibTrie* m_pTrie;				//RibTrie
+
 	void AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop);
 };
 

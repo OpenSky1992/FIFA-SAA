@@ -112,14 +112,21 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 
 int main()
 {
-	int testA;
 	Rib tRib=Rib();
 	Fib tFib=Fib();
-
-	tRib.BuildRibFromFile("rib2.txt");
-	tFib.CopyTrieFromRib(tRib.m_pTrie,tFib.m_pTrie);
+	bool ipFormat=false;
+	char *ribFile="rib2.txt";
+	char *ribFileIP="rib2_ip.txt";
+	
+	if(ipFormat)
+		tRib.BuildRibFromFile(ribFile);
+	else
+	{
+		tRib.ConvertBinToIP(ribFile,ribFileIP);
+		tRib.BuildRibFromFile(ribFileIP);
+	}
+	tFib.ConstructFromRib(tRib.getRibTrie());
 	tFib.Compress();
 	updateFromFile("updates2.txt",&tRib,&tFib);
-	cin>>testA;
 	return 0;
 }

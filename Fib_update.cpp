@@ -144,15 +144,22 @@ void Fib::Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pRibLa
 				if(inheritHopRib==iNextHop)
 					return ;
 			}
-			pRibLast->iNextHop=EMPTYHOP;
-			updateGoDown_Merge(pRibLast,pFibLast,iNextHop);
-			pRibLast->iNextHop=iNextHop;
+			if(pRibLast->pLeftChild==NULL&&pRibLast->pRightChild==NULL)
+				pFibLast->pNextHop->iVal=iNextHop;				
+			else
+			{
+				pRibLast->iNextHop=EMPTYHOP;
+				updateGoDown_Merge(pRibLast,pFibLast,iNextHop);
+				pRibLast->iNextHop=iNextHop;
+			}
 		}
 		else  //withdraw
 		{
 			pRibLast->iNextHop=EMPTYHOP;
-			updateGoDown_Merge(pRibLast,pFibLast,inheritHopRib);
-			pRibLast->iNextHop=iNextHop;
+			if(pRibLast->pLeftChild==NULL&&pRibLast->pRightChild==NULL)
+				pFibLast->pNextHop->iVal=inheritHopRib;
+			else
+				updateGoDown_Merge(pRibLast,pFibLast,inheritHopRib);
 		}
 	}
 
@@ -223,7 +230,10 @@ void Fib::Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pRibLa
 	PassThree(pMostBNCF,inheritNewHopFib);
 }
 
-void Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
+//this function only for those node is No-Leaf node
+//this funciont can find the node that it is NULL in Rib trie but counterNode in Fib trie is not NULL
+//and correct this nodes' nexthop set.
+bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 {
 	if(pRib->iNextHop!=EMPTYHOP)
 		return;

@@ -11,6 +11,10 @@ Fib::~Fib(void)
 {
 }
 
+void Fib::ConstructFromRib(RibTrie* pRibTrie)
+{
+	CopyTrieFromRib(pRibTrie,m_pTrie);
+}
 
 //copy RibTrie to FibTrie
 void Fib::CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie)
@@ -69,6 +73,7 @@ void Fib::CreateNewNode(FibTrie* &pTrie)
 	pTrie->pRightChild = NULL;
 	pTrie->iNewPort = EMPTYHOP;
 	pTrie->intersection=false;
+	pTrie->is_NCC_area=false;
 
 	pNHop->iVal = EMPTYHOP;
 	pNHop->pNext = NULL;
