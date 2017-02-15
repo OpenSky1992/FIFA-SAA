@@ -73,7 +73,7 @@ void Fib::CreateNewNode(FibTrie* &pTrie)
 	pTrie->pRightChild = NULL;
 	pTrie->iNewPort = EMPTYHOP;
 	pTrie->intersection=false;
-	pTrie->is_NCC_area=false;
+	pTrie->is_NNC_area=false;
 
 	pNHop->iVal = EMPTYHOP;
 	pNHop->pNext = NULL;

@@ -63,6 +63,7 @@ private:
 	void update_process();
 	FibTrie *LastVisitNode(int &outDeepFib);
 	void update_NextHopSet(FibTrie *,int outDeepFib);
+	void update_select(FibTrie *pFib,int oldHop,int newHop);
 	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
 	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC

@@ -166,24 +166,23 @@ void Fib::update_process()
 	update_NextHopSet(pLastFib,outDeepFib);
 	//Nexthop set changing expand
 	FibTrie *pMostBNCF=pLastFib,*pMostTCF=NULL;  //pMostBottomNoChangeFib,pMostTopChangeFib
-	int goTopLevel=0,inheritOldHopFib,inheritNewHopFib;
+	int inheritOldHopFib,inheritNewHopFib;
 	while(!EqualNextHopSet(oldNextHopSet,pMostBNCF->pNextHop))
 	{
 		freeNextHopSet(oldNextHopSet);
 		pMostTCF=pMostBNCF;
 		pMostBNCF=pMostBNCF->pParent;
+		if(pMostBNCF->pLeftChild==pMostTCF)
+			pMostBNCF->pRightChild->is_NNC_area=true;
+		else
+			pMostBNCF->pLeftChild->is_NNC_area=true;
 		if(pMostBNCF==NULL)
 			break;
-		goTopLevel++;
 		oldNextHopSet=CopyNextHopSet(pMostBNCF->pNextHop);
 		NextHopMerge(pMostBNCF);
 	}
-	//if(pMostBNCF==pLastFib)    //all nodes' nexthop set don't change,so exit.
-	//	return ;
 	
 	//select precess
-	int startBit=(int)strlen(update_insert_C)-outDeepFib-goTopLevel;
-	int endBit=startBit+goTopLevel;
 	if(pMostBNCF==NULL)
 	{
 		inheritOldHopFib=DEFAULTHOP-1;
@@ -195,37 +194,37 @@ void Fib::update_process()
 		inheritOldHopFib=GetAncestorHop(pMostBNCF);
 		inheritNewHopFib=inheritOldHopFib;
 		pMostBNCF=pMostTCF;
-		startBit=startBit+1;
 	}
-	bool clearAlongPath;
-	for(int i=startBit;i<endBit;i++)
+	update_select(pMostBNCF,inheritOldHopFib,inheritNewHopFib);
+}
+
+void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
+{
+	if(pFib->is_NNC_area)
 	{
-		clearAlongPath=true;
-		if(pMostBNCF->iNewPort!=EMPTYHOP)
-			inheritOldHopFib=pMostBNCF->iNewPort;
-		if(pMostBNCF->intersection)
+		NsNoChange_common_select(pFib,oldHop,newHop);
+		pFib->is_NNC_area=false;
+	}
+	else
+	{
+		int inheritOldHopFib=oldHop,inheritNewHopFib=newHop;
+		bool clear=true;
+		if(pFib->iNewPort!=EMPTYHOP)
+			inheritOldHopFib=pFib->iNewPort;
+		if(pFib->intersection)
 		{
-			if(!ifcontainFunc(inheritNewHopFib,pMostBNCF->pNextHop))
-			{//there have some problem,it is more reason that selecting the old one hop.
-				pMostBNCF->iNewPort=pMostBNCF->pNextHop->iVal;
-				inheritNewHopFib=pMostBNCF->iNewPort;
-				clearAlongPath=false;
+			if(!ifcontainFunc(newHop,pFib->pNextHop))
+			{
+				pFib->iNewPort=pFib->pNextHop->iVal;
+				inheritNewHopFib=pFib->iNewPort;
+				clear=false;
 			}
 		}
-		if(clearAlongPath)
-			pMostBNCF->iNewPort=EMPTYHOP;
-		if('0'==update_insert_C[i])
-		{
-			NsNoChange_common_select(pMostBNCF->pRightChild,inheritOldHopFib,inheritNewHopFib);
-			pMostBNCF=pMostBNCF->pLeftChild;
-		}
-		else
-		{
-			NsNoChange_common_select(pMostBNCF->pLeftChild,inheritOldHopFib,inheritNewHopFib);
-			pMostBNCF=pMostBNCF->pRightChild;
-		}
+		if(clear)
+			pFib->iNewPort=EMPTYHOP;
+		update_select(pFib->pLeftChild,inheritOldHopFib,inheritNewHopFib);
+		update_select(pFib->pRightChild,inheritOldHopFib,inheritNewHopFib);
 	}
-	PassThree(pMostBNCF,inheritNewHopFib);
 }
 
 void Fib::Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHopRib)
@@ -245,7 +244,10 @@ void Fib::Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pLastR
 bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 {
 	if(pRib->iNextHop!=EMPTYHOP)
-		return;
+	{
+		pFib->is_NNC_area=true;
+		return true;
+	}
 	if(pRib->pLeftChild==NULL&&pRib->pRightChild!=NULL)
 	{
 		pFib->pLeftChild->iNewPort=pFib->pLeftChild->pNextHop->iVal=inheritHop;
@@ -260,13 +262,15 @@ bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 	}
 	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild!=NULL)
 	{
-		updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
-		updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
+		bool leftReturn=updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
+		bool rightReturn=updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
+		pFib->is_NNC_area=leftReturn&&rightReturn;
 		NextHopMerge(pFib);
 	}
 	else
-	{
-		return ;
+	{//this is the same effect in the first if_statement.because Leaf node must have label
+		pFib->is_NNC_area=true;
+		return true;
 	}
 }
 
