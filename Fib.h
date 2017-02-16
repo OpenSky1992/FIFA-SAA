@@ -29,7 +29,7 @@ class Fib
 public:
 	Fib(void);
 	~Fib(void);
-	void Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pLastRib,int outRibDeep,int inheritHop);	
+	void Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHop);	
 	void ConstructFromRib(RibTrie* pRibTrie);
 	void Compress();
 
@@ -38,11 +38,6 @@ public:
 private:
 	//Data fib trie
 	FibTrie* m_pTrie;	
-	//data come from parameter
-	int update_iNextHop,update_outDeepRib,update_inheritHopRib;
-	char *update_insert_C;
-	char update_operation_type;
-	RibTrie* update_pLastRib;
 
 	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
@@ -60,9 +55,9 @@ private:
 	void NextHopMerge(FibTrie *pTrie);
 
 	//update function
-	void update_process();
-	FibTrie *LastVisitNode(int &outDeepFib);
-	void update_NextHopSet(FibTrie *,int outDeepFib);
+	void update_process(FibTrie *,NextHop *);
+	FibTrie *LastVisitNode(int iNextHop,char *insert_C,int &outDeepFib);
+	void update_NextHopSet(int iNextHop,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHopRib,FibTrie *pLastFib,int outDeepFib);
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
 	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
