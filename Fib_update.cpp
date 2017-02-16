@@ -115,42 +115,42 @@ NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 	return pCopyHead;
 }
 
-bool Fib::update_NextHopSet(int iNextHop,char operation,RibTrie* pLastRib,int outDeepRib,int inherit,FibTrie *pLastFib,int outDeepFib)
+bool Fib::update_NextHopSet(int iNextHop,char operation,RibTrie* pLastRib,int outDeep,int inherit,FibTrie *pLastFib)
 {
-	if(outDeepRib>0)  //this is update class updateOutRib
+	if(operation=='A')
 	{
-		switch (outDeepFib)
+		if(pLastRib->pLeftChild==NULL&&pLastRib->pRightChild==NULL)//announce leaf node
 		{
-		case 0:if(iNextHop==pLastFib->pNextHop->iVal){return false;}else{pLastFib->pNextHop->iVal=iNextHop;}break;
-		case 1:if(iNextHop==pLastFib->pNextHop->iVal){return false;}NextHopMerge(pLastFib);break;
-		default:PassOneTwo(pLastFib);return false;break;
+			switch (outDeep)
+			{
+			case 0:if(iNextHop==pLastFib->pNextHop->iVal){return false;}else{pLastFib->pNextHop->iVal=iNextHop;}break;
+			case 1:if(iNextHop==pLastFib->pNextHop->iVal){return false;}NextHopMerge(pLastFib);break;
+			default:PassOneTwo(pLastFib);return false;break;
+			}
 		}
-	}
-	else if(outDeepRib<0)//withdraw leaf node
-	{
-		outDeepRib=outDeepRib*-1;
-	}
-	else    //this is update to NonLeaf node
-	{
-		if(operation=='A')//announce
+		else
 		{
 			if(pLastRib->iNextHop==EMPTYHOP)
 				if(inherit==iNextHop)
-					return false;
-			if(pLastRib->pLeftChild==NULL&&pLastRib->pRightChild==NULL)
-				pLastFib->pNextHop->iVal=iNextHop;//annouce the leaf node				
-			else
+					return false;				
+			pLastRib->iNextHop=EMPTYHOP;
+			if(updateGoDown_Merge(pLastRib,pLastFib,iNextHop))
 			{
-				pLastRib->iNextHop=EMPTYHOP;
-				if(updateGoDown_Merge(pLastRib,pLastFib,iNextHop))
-				{
-					pLastRib->iNextHop=iNextHop;
-					return false;
-				}
 				pLastRib->iNextHop=iNextHop;
+				return false;
+			}
+			pLastRib->iNextHop=iNextHop;
+		}
+	}
+	else
+	{
+		if(outDeepRib>0)//withdraw leaf node
+		{
+			switch(outDeepRib)
+			{
 			}
 		}
-		else  //withdraw to NonLeaf node
+		else          //withdraw to NonLeaf node
 		{
 			if(pLastRib->iNextHop!=EMPTYHOP)
 				if(pLastRib->iNextHop==inherit)
@@ -231,10 +231,17 @@ void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 
 void Fib::Update(int iNextHop,char *insert_C,char operation,RibTrie* pLastRib,int outDeepRib,int inherit)
 {
-	int outDeepFib;
-	FibTrie *pLastFib=LastVisitNode(iNextHop,insert_C,outDeepFib);
-	NextHop *oldNextHopSet=CopyNextHopSet(pLastFib->pNextHop);	
-	bool ifchange=update_NextHopSet(iNextHop,operation,pLastRib,outDeepRib,inherit,pLastFib,outDeepFib);  //update Nexthop set
+	int outDeep,iNextHop_withdraw;
+	NextHop *oldNextHopSet;
+	FibTrie *pLastFib=LastVisitNode(iNextHop,insert_C,outDeep);
+	if(operation!='A')
+	{
+		pLastFib=withdrawLeaf(pLastFib,outDeepRib);
+		outDeep=outDeepRib;
+		//iNextHop_withdraw=-1
+	}
+	oldNextHopSet=CopyNextHopSet(pLastFib->pNextHop);	
+	bool ifchange=update_NextHopSet(iNextHop,operation,pLastRib,outDeep,inherit,pLastFib);  //update Nexthop set
 	if(ifchange)
 		update_process(pLastFib,oldNextHopSet);
 }
@@ -388,7 +395,14 @@ int Fib::priority_select(int oldSelect,int oldInherit,NextHop *ptmp)
 	}
 }
 
-FibTrie* Fib::withdrawLeaf(FibTrie *pRib,int inherit,int &upLevel)
+FibTrie* Fib::withdrawLeaf(FibTrie *pFib,int upLevel)
 {
-	
+	FibTrie *pTrie=pFib;
+	for(int i=0;i<upLevel;i++)
+		pTrie=pTrie->pParent;
+	FreeSubTree(pTrie->pLeftChild);
+	FreeSubTree(pTrie->pRightChild);
+	pTrie->pLeftChild=NULL;
+	pTrie->pRightChild=NULL;
+	return pTrie;
 }

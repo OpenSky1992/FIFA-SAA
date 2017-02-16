@@ -57,7 +57,7 @@ private:
 
 	//I sperate a old version big function into those little function
 	void update_process(FibTrie *,NextHop *);
-	bool update_NextHopSet(int iNextHop,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHopRib,FibTrie *pLastFib,int outDeepFib);
+	bool update_NextHopSet(int iNextHop,char operation_type,RibTrie* pLastRib,int outDeep,int inheritHopRib,FibTrie *pLastFib);
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
 	
 	//update function
@@ -69,7 +69,7 @@ private:
 	FibTrie* NNC_SS_search(FibTrie *pFib,int iNextHop);
 
 	//withdraw delete
-	FibTrie* withdrawLeaf(FibTrie *pRib,int inherit,int upLevel);
+	FibTrie* withdrawLeaf(FibTrie *pFib,int upLevel);
 };
 
 /*three important recursive function 

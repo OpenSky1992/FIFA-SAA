@@ -182,7 +182,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 		if (insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
 		{
 			insertNode=withdrawLeafNode(insertNode,outDeep);
-			outsideOfRib=outDeep*-1;
+			outsideOfRib=outDeep;
 			return insertNode;
 		}
 		else
