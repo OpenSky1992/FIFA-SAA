@@ -53,16 +53,28 @@ private:
 	NextHop* CopyNextHopSet(NextHop *ptmp);
 	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
 	void NextHopMerge(FibTrie *pTrie);
+	int priority_select(int oldSelect,int oldInherit,NextHop *ptmp);
 
-	//update function
+	//I sperate a old version big function into those little function
 	void update_process(FibTrie *,NextHop *);
-	FibTrie *LastVisitNode(int iNextHop,char *insert_C,int &outDeepFib);
-	void update_NextHopSet(int iNextHop,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHopRib,FibTrie *pLastFib,int outDeepFib);
+	bool update_NextHopSet(int iNextHop,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHopRib,FibTrie *pLastFib,int outDeepFib);
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
+	
+	//update function
+	FibTrie *LastVisitNode(int iNextHop,char *insert_C,int &outDeepFib);
 	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
 	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC
 	void NNC_SS_Double_search(FibTrie *pFib,int oldHop,int newHop);
 	FibTrie* NNC_SS_search(FibTrie *pFib,int iNextHop);
+
+	//withdraw delete
+	FibTrie* withdrawLeaf(FibTrie *pRib,int inherit,int upLevel);
 };
+
+/*three important recursive function 
+NsNoChange_standard_select		
+updateGoDown_Merge:				post-order travel
+update_select:					pre-order travel
+*/
 

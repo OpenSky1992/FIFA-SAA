@@ -52,8 +52,8 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		int iEnd=0;					//the end point of IP
 		int iFieldIndex = 3;		
 		int iLen=strlen(sPrefix);	//the length of Prefix
-		int update_outsideOfRib;
-		int update_inheritHop;
+		int outsideOfRib;
+		int inheritHop;
 
 		
 		if(iLen>0)
@@ -97,9 +97,9 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 			if(!QueryPerformanceFrequency(&frequence))return 0;
 			QueryPerformanceCounter(&privious); 
 
-			RibTrie *updateRibNode=tRib->Update(iNextHop,insert_C,operate_type_read,update_outsideOfRib,update_inheritHop);
+			RibTrie *updateRibNode=tRib->Update(iNextHop,insert_C,operate_type_read,outsideOfRib,inheritHop);
 			if (NULL!=updateRibNode)
-				tFib->Update(iNextHop,insert_C,operate_type_read,updateRibNode,update_outsideOfRib,update_inheritHop);
+				tFib->Update(iNextHop,insert_C,operate_type_read,updateRibNode,outsideOfRib,inheritHop);
 			QueryPerformanceCounter(&privious1);
 			updatetimeused+=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
 		}

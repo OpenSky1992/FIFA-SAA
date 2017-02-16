@@ -105,17 +105,11 @@ unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 
 RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsideOfRib,int &inheritHop)
 {
-	//ifWithDrawLeaf=false;
-	//update_oldport=-1;
-	RibTrie *ret=NULL;
-	int operation;
-	//locate the node that will be updated
 	RibTrie *insertNode=m_pTrie;
 	int default_oldport=-1;
 	int default_newport=-1;
 	int outDeep=0;
 
-	bool IfNewBornNode=false;
 	//look up the location of the current node
 	//Attention : the update node may not exist in FIB
 	for (int i=0;i<(int)strlen(insert_C);i++)
@@ -125,10 +119,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 			if (NULL==insertNode->pLeftChild)
 			{//turn left, if left child is empty, create new node
 				if('W'==operation_type)	
-				{
 					return NULL;
-				}
-				IfNewBornNode=true;
 				RibTrie* pNewNode=(RibTrie*)malloc(sizeof(RibTrie));
 				if (NULL==pNewNode)
 				{
@@ -142,7 +133,6 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 				insertNode->pLeftChild=pNewNode;
 				outDeep++;
 			}
-
 			insertNode=insertNode->pLeftChild;
 		}
 		else
@@ -150,10 +140,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 			if (NULL==insertNode->pRightChild)
 			{
 				if('W'==operation_type)	
-				{
 					return NULL;
-				}
-				IfNewBornNode=true;
 				RibTrie* pNewNode=(RibTrie*)malloc(sizeof(RibTrie));
 				if (NULL==pNewNode)
 				{
@@ -181,33 +168,73 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 	inheritHop=default_oldport;
 	if('A'==operation_type) 
 	{
-		//invalid update
-		if (insertNode->iNextHop==iNextHop)return NULL;
-		
-		//insert 
-		insertNode->iNextHop=iNextHop;
-		ret=insertNode;
+		if (insertNode->iNextHop==iNextHop)//invalid update
+			return NULL;
+		insertNode->iNextHop=iNextHop;//insert 
+		return insertNode;
 	}
-
-	//invalid delete operation
-	else if (0==insertNode->iNextHop)
+	else if (EMPTYHOP==insertNode->iNextHop)//invalid delete operation
 	{
-		ret=NULL;
+		return NULL;
 	}
 	else //Withdraw
 	{
-		//update_oldport=default_oldport;
 		if (insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
 		{
-			insertNode->iNextHop=0;
-			ret=insertNode;
+			insertNode=withdrawLeafNode(insertNode,outDeep);
+			outsideOfRib=outDeep*-1;
+			return insertNode;
 		}
 		else
 		{
 			return insertNode;
 		}
 	}
-	return ret;
+}
+
+RibTrie* Rib::withdrawLeafNode(RibTrie *pLeaf,int &goUp)
+{
+	int upLevel,breakwhile;
+	RibTrie *pTrie=pLeaf;
+	RibTrie *temp=pTrie->pParent;
+	breakwhile=1;
+	upLevel=0;
+	if(temp!=NULL)
+	{
+		while(temp->pLeftChild==NULL||temp->pRightChild==NULL)
+		{
+			if(temp->iNextHop!=EMPTYHOP)
+			{
+				breakwhile=2;
+				break;
+			}
+			if(temp->pLeftChild==NULL)
+				temp->pRightChild=NULL;
+			else
+				temp->pLeftChild=NULL;
+			free(pTrie);
+			pTrie=temp;
+			upLevel++;
+			temp=temp->pParent;
+			if(temp==NULL)
+			{
+				breakwhile=3;
+				break;
+			}
+		}
+	}
+	else
+		breakwhile=4;
+	goUp=upLevel;
+	return temp;
+	//switch(breakwhile)
+	//{
+	//case 1:
+	//case 2:
+	//case 3:goUp=upLevel;return temp;break;
+	//case 4:break;
+	//default:goUp=0;return NULL;break;
+	//}
 }
 
 unsigned int Rib::BuildRibFromFile(string sFileName)

@@ -305,12 +305,11 @@ void Fib::FreeSubTree(FibTrie *FreeNode)
 	FreeSubTree(FreeNode->pLeftChild);
 	FreeSubTree(FreeNode->pRightChild);
 
-	FreeNode->pLeftChild=NULL;
-	FreeNode->pRightChild=NULL;
-
 	if (FreeNode->pParent->pLeftChild==FreeNode)FreeNode->pParent->pLeftChild=NULL;
 	else										FreeNode->pParent->pRightChild=NULL;
 
 	freeNextHopSet(FreeNode->pNextHop);
+	FreeNode->pNextHop=NULL;
 	free(FreeNode);
 }
+

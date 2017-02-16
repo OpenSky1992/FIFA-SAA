@@ -115,46 +115,52 @@ NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 	return pCopyHead;
 }
 
-void Fib::update_NextHopSet(int iNextHop,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHopRib,FibTrie *pLastFib,int outDeepFib)
+bool Fib::update_NextHopSet(int iNextHop,char operation,RibTrie* pLastRib,int outDeepRib,int inherit,FibTrie *pLastFib,int outDeepFib)
 {
 	if(outDeepRib>0)  //this is update class updateOutRib
 	{
-		PassOneTwo(pLastFib);
 		switch (outDeepFib)
 		{
-		case 0:if(iNextHop==pLastFib->pNextHop->iVal){return ;}else{pLastFib->pNextHop->iVal=iNextHop;}break;
-		case 1:if(iNextHop==pLastFib->pNextHop->iVal){return ;}break;
-		default:
-			return ;break;
+		case 0:if(iNextHop==pLastFib->pNextHop->iVal){return false;}else{pLastFib->pNextHop->iVal=iNextHop;}break;
+		case 1:if(iNextHop==pLastFib->pNextHop->iVal){return false;}NextHopMerge(pLastFib);break;
+		default:PassOneTwo(pLastFib);return false;break;
 		}
 	}
-	else    //this is update class updateInRib
+	else if(outDeepRib<0)//withdraw leaf node
 	{
-		if(operation_type=='A')//announce
+		outDeepRib=outDeepRib*-1;
+	}
+	else    //this is update to NonLeaf node
+	{
+		if(operation=='A')//announce
 		{
 			if(pLastRib->iNextHop==EMPTYHOP)
-			{
-				if(inheritHopRib==iNextHop)
-					return ;
-			}
+				if(inherit==iNextHop)
+					return false;
 			if(pLastRib->pLeftChild==NULL&&pLastRib->pRightChild==NULL)
-				pLastFib->pNextHop->iVal=iNextHop;				
+				pLastFib->pNextHop->iVal=iNextHop;//annouce the leaf node				
 			else
 			{
 				pLastRib->iNextHop=EMPTYHOP;
-				updateGoDown_Merge(pLastRib,pLastFib,iNextHop);
+				if(updateGoDown_Merge(pLastRib,pLastFib,iNextHop))
+				{
+					pLastRib->iNextHop=iNextHop;
+					return false;
+				}
 				pLastRib->iNextHop=iNextHop;
 			}
 		}
-		else  //withdraw
+		else  //withdraw to NonLeaf node
 		{
+			if(pLastRib->iNextHop!=EMPTYHOP)
+				if(pLastRib->iNextHop==inherit)
+					return false;
 			pLastRib->iNextHop=EMPTYHOP;
-			if(pLastRib->pLeftChild==NULL&&pLastRib->pRightChild==NULL)
-				pLastFib->pNextHop->iVal=inheritHopRib;
-			else
-				updateGoDown_Merge(pLastRib,pLastFib,inheritHopRib);
+			if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
+				return false;
 		}
 	}
+	return true;
 }
 
 void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
@@ -177,7 +183,6 @@ void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
 		oldNextHopSet=CopyNextHopSet(pMostBNCF->pNextHop);
 		NextHopMerge(pMostBNCF);
 	}
-	
 	//select precess
 	if(pMostBNCF==NULL)
 	{
@@ -211,8 +216,9 @@ void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 		{
 			if(!ifcontainFunc(newHop,pFib->pNextHop))
 			{
-				pFib->iNewPort=pFib->pNextHop->iVal;
-				inheritNewHopFib=pFib->iNewPort;
+				int selectHop=priority_select(pFib->iNewPort,inheritOldHopFib,pFib->pNextHop);
+				pFib->iNewPort=selectHop;
+				inheritNewHopFib=selectHop;
 				clear=false;
 			}
 		}
@@ -223,13 +229,14 @@ void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 	}
 }
 
-void Fib::Update(int iNextHop,char *insert_C,char operation,RibTrie* pLastRib,int outDeepRib,int inheritHop)
+void Fib::Update(int iNextHop,char *insert_C,char operation,RibTrie* pLastRib,int outDeepRib,int inherit)
 {
 	int outDeepFib;
 	FibTrie *pLastFib=LastVisitNode(iNextHop,insert_C,outDeepFib);
 	NextHop *oldNextHopSet=CopyNextHopSet(pLastFib->pNextHop);	
-	update_NextHopSet(iNextHop,operation,pLastRib,outDeepRib,inheritHop,pLastFib,outDeepFib);  //update Nexthop set
-	update_process(pLastFib,oldNextHopSet);
+	bool ifchange=update_NextHopSet(iNextHop,operation,pLastRib,outDeepRib,inherit,pLastFib,outDeepFib);  //update Nexthop set
+	if(ifchange)
+		update_process(pLastFib,oldNextHopSet);
 }
 
 //this function only for those node is No-Leaf node
@@ -247,12 +254,14 @@ bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 		pFib->pLeftChild->iNewPort=pFib->pLeftChild->pNextHop->iVal=inheritHop;
 		updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
 		NextHopMerge(pFib);
+		return false;
 	}
 	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild==NULL)
 	{
 		pFib->pRightChild->iNewPort=pFib->pRightChild->pNextHop->iVal=inheritHop;
 		updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
 		NextHopMerge(pFib);
+		return false;
 	}
 	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild!=NULL)
 	{
@@ -260,6 +269,7 @@ bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 		bool rightReturn=updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
 		pFib->is_NNC_area=leftReturn&&rightReturn;
 		NextHopMerge(pFib);
+		return pFib->is_NNC_area;
 	}
 	else
 	{//this is the same effect in the first if_statement.because Leaf node must have label
@@ -357,4 +367,28 @@ void Fib::NNC_SS_Double_search(FibTrie *pFibRoot,int oldInheritHop,int newInheri
 		else
 			NsNoChange_standard_select(pNewTrie,pNewTrie->iNewPort,newInheritHop);
 	}
+}
+
+int Fib::priority_select(int oldSelect,int oldInherit,NextHop *ptmp)
+{
+	int selectHop;
+	if(oldSelect!=EMPTYHOP)
+	{
+		if(ifcontainFunc(oldSelect,ptmp))
+			return oldSelect;
+		else
+			return ptmp->iVal;
+	}
+	else
+	{
+		if(ifcontainFunc(oldInherit,ptmp))
+			return oldInherit;
+		else
+			return ptmp->iVal;
+	}
+}
+
+FibTrie* Fib::withdrawLeaf(FibTrie *pRib,int inherit,int &upLevel)
+{
+	
 }

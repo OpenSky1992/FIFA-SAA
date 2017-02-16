@@ -30,7 +30,7 @@ public:
 
 private:
 	RibTrie* m_pTrie;				//RibTrie
-
+	RibTrie* withdrawLeafNode(RibTrie *pTrie,int &goUp);
 	void AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop);
 };
 
