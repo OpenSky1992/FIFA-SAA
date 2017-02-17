@@ -4,7 +4,7 @@
 
 Rib::Rib(void)
 {
-	update=(updateRib*)malloc(sizeof(updateRib));
+	update=(UpdateRib*)malloc(sizeof(UpdateRib));
 	m_pTrie = (struct RibTrie*)malloc(RIBLEN);
 	if (NULL==m_pTrie)
 	{
@@ -127,7 +127,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 		{
 			if (NULL==insertNode->pLeftChild)
 			{//turn left, if left child is empty, create new node
-				if('W'==operation_type)	
+				if(UPDATE_WITHDRAW==operation_type)	
 					return NULL;
 				RibTrie* pNewNode=(RibTrie*)malloc(sizeof(RibTrie));
 				if (NULL==pNewNode)
@@ -147,7 +147,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 		{//turn right, if right child is empty, create new node
 			if (NULL==insertNode->pRightChild)
 			{
-				if('W'==operation_type)	
+				if(UPDATE_WITHDRAW==operation_type)	
 					return NULL;
 				RibTrie* pNewNode=(RibTrie*)malloc(sizeof(RibTrie));
 				if (NULL==pNewNode)
@@ -174,7 +174,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 	update->isLeaf=false;
 	update->inheritHop=default_oldport;
 	update->withdrawLeafoldHop=EMPTYHOP;
-	if('A'==operation_type) 
+	if(UPDATE_ANNOUNCE==operation_type) 
 	{
 		if (insertNode->iNextHop==iNextHop)//invalid update
 			return NULL;

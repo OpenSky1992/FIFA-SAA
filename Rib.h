@@ -1,9 +1,11 @@
 #pragma once
 
 #define RIBLEN				sizeof(struct RibTrie)		//size of the node in Trie
-#define HIGHTBIT				2147483648				//Binary: 10000000000000000000000000000000
+#define HIGHTBIT			2147483648				//Binary: 10000000000000000000000000000000
 #define EMPTYHOP			0							//next hop is 0
 #define DEFAULTHOP			-1                          //
+#define UPDATE_WITHDRAW		'W'
+#define UPDATE_ANNOUNCE     'A'
 
 #include <string>
 using namespace std;

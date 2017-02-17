@@ -30,6 +30,7 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		printf("!!!error!!!!  no file named:%s\n",sFileName);
 	}
 	cout<<"parsing file:"<<sFileName;
+	UpdatePara parameter;
 
 	while (!fin.eof()) 
 	{
@@ -40,14 +41,16 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		memset(sPrefix,0,sizeof(sPrefix));
 		fin >> yearmonthday >> hourminsec >> operate_type>> sPrefix;//>> iNextHop;
 
-		if('A'==operate_type)
+		if(UPDATE_ANNOUNCE==operate_type)
 			fin>>iNextHop;
-		if('W'!=operate_type&&'A'!=operate_type)
+		if(UPDATE_WITHDRAW!=operate_type&&UPDATE_ANNOUNCE!=operate_type)
 		{
 			printf("Format of update file Error, quit....\n");
 			getchar();
 			return 0;
 		}
+		parameter.nextHop=iNextHop;
+		parameter.operate=operate_type;
 		int iStart=0;				//the end point of IP
 		int iEnd=0;					//the end point of IP
 		int iFieldIndex = 3;		
@@ -83,13 +86,14 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 				}
 			}
 
-			char insert_C[50];
-			memset(insert_C,0,sizeof(insert_C));
+			memset(parameter.path,0,sizeof(parameter.path));
 		    //insert the current node into Trie tree
 			for (unsigned int yi=0; yi<iPrefixLen; yi++)
 			{
-				if(((lPrefix<<yi) & HIGHTBIT)==HIGHTBIT)insert_C[yi]='1';
-				else insert_C[yi]='0';
+				if(((lPrefix<<yi) & HIGHTBIT)==HIGHTBIT)
+					parameter.path[yi]='1';
+				else 
+					parameter.path[yi]='0';
 			}
 
 
@@ -97,12 +101,12 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 			if(!QueryPerformanceFrequency(&frequence))return 0;
 			QueryPerformanceCounter(&privious); 
 
-			RibTrie *updateRib=tRib->Update(iNextHop,insert_C,operate_type);
+			RibTrie *updateRib=tRib->Update(iNextHop,parameter.path,operate_type);
 			if (NULL!=updateRib)
 			{
 				UpdateRib *info=tRib->getUpdate();
 				info->pLastRib=updateRib;
-				tFib->Update(iNextHop,insert_C,operate_type,info);
+				tFib->Update(&parameter,info);
 			}
 			QueryPerformanceCounter(&privious1);
 			updatetimeused+=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
