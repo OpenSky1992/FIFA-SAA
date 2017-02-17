@@ -1,7 +1,6 @@
 #include "Fib.h"
 
 
-
 bool Fib::EqualNextHopSet(NextHop *pNextA,NextHop *pNextB)
 {
 	NextHop *pA=pNextA,*pB=pNextB;
@@ -28,15 +27,13 @@ bool Fib::EqualNextHopSet(NextHop *pNextA,NextHop *pNextB)
 	return true;
 }
 
-
-FibTrie* Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
+NextHop* Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 {
 	FibTrie *insertNode=m_pTrie;
 	FibTrie *pNTrie,*pCounterTrie;
 	FibTrie* pLastVisit;
 	int outDeep=0;
-	char operation=para->operate;
-	int iNextHop=para->nextHop;
+	int intNextHop=para->nextHop;
 
 	for (int i=0;i<(int)strlen(para->path);i++)
 	{
@@ -79,22 +76,57 @@ FibTrie* Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 			insertNode=insertNode->pRightChild;
 		}
 	}
-	if(UPDATE_ANNOUNCE==operation)
+	NextHop *oldNHS=CopyNextHopSet(pLastVisit->pNextHop);
+	para->pLastFib=pLastVisit;
+	if(UPDATE_ANNOUNCE==para->operate)
 	{
 		info->outNumber=outDeep;
 		if(info->isLeaf)
 		{
+			switch(info->outNumber)
+			{
+			case 0:
+				break;
+			case 1:
+				if(intNextHop==pLastVisit->pNextHop->iVal)
+					return NULL;
+				break;
+			default:
+				if(intNextHop==pLastVisit->pNextHop->iVal)
+					return NULL;
+				insertNode->iNewPort=intNextHop;
+				break;
+			}
 			insertNode->intersection=true;
-			insertNode->pNextHop->iVal=iNextHop;
-			if(iNextHop!=pLastVisit->pNextHop->iVal)
-				if(outDeep>=2)
-					insertNode->iNewPort=iNextHop;
+			insertNode->pNextHop->iVal=intNextHop;
+			PassOneTwo(pLastVisit);
 		}
 	}
 	else
+	{
 		if(info->isLeaf)
+		{
+			if(info->inheritHop==info->withdrawLeafoldHop)
+				return NULL;
+			switch(info->outNumber)
+			{
+			case 0:
+				break;
+			case 1:
+				oldNHS=CopyNextHopSet(pLastVisit->pParent->pNextHop);
+				freeNextHopSet(pLastVisit->pNextHop->pNext);
+				pLastVisit->pNextHop->pNext=NULL;
+				break;
+			default:
+				oldNHS->iVal=info->inheritHop;
+				break;
+			}
 			pLastVisit=withdrawLeaf(pLastVisit,info->outNumber);
-	return pLastVisit;
+			para->pLastFib=pLastVisit;
+			pLastVisit->pNextHop->iVal=info->inheritHop;
+		}
+	}
+	return oldNHS;
 }
 
 NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
@@ -123,46 +155,28 @@ bool Fib::update_NextHopSet(UpdatePara *para,UpdateRib *info)
 {
 	RibTrie *pLastRib=info->pLastRib;
 	int inherit=info->inheritHop;
-	int iNextHop=para->nextHop;
-	char operation=para->operate;
+	
 	FibTrie* pLastFib=para->pLastFib;
-	if(UPDATE_ANNOUNCE==operation)
+	if(UPDATE_ANNOUNCE==para->operate)
 	{
-		if(info->isLeaf)//announce leaf node
-		{
-			if(iNextHop==pLastFib->pNextHop->iVal)
-				return false;
-			PassOneTwo(pLastFib);
-			if(info->outNumber>=2)
-				return false;
-		}
-		else
+		int intNextHop=para->nextHop;
+		if(!info->isLeaf)//announce leaf node
 		{
 			if(pLastRib->iNextHop==EMPTYHOP)
-				if(inherit==iNextHop)
+				if(inherit==intNextHop)
 					return false;				
 			pLastRib->iNextHop=EMPTYHOP;
-			if(updateGoDown_Merge(pLastRib,pLastFib,iNextHop))
+			if(updateGoDown_Merge(pLastRib,pLastFib,intNextHop))
 			{
-				pLastRib->iNextHop=iNextHop;
+				pLastRib->iNextHop=intNextHop;
 				return false;
 			}
-			pLastRib->iNextHop=iNextHop;
+			pLastRib->iNextHop=intNextHop;
 		}
 	}
 	else
 	{
-		if(info->isLeaf)//withdraw leaf node
-		{
-			if(inherit==info->withdrawLeafoldHop)
-				return false;
-			pLastFib->pNextHop->iVal=inherit;
-			freeNextHopSet(pLastFib->pNextHop->pNext);
-			pLastFib->pNextHop->pNext=NULL;
-			if(info->outNumber>=2)
-				return false;
-		}
-		else            //withdraw to NonLeaf node
+		if(!info->isLeaf)//withdraw leaf node
 		{
 			if(pLastRib->iNextHop!=EMPTYHOP)
 				if(pLastRib->iNextHop==inherit)
@@ -243,14 +257,10 @@ void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 
 void Fib::Update(UpdatePara *para,UpdateRib *info)
 {
-	int outDeep,iNextHop_withdraw;
-	NextHop *oldNextHopSet;
-	FibTrie *pLastFib=LastVisitNode(para,info);
-	para->pLastFib=pLastFib;
-	oldNextHopSet=CopyNextHopSet(pLastFib->pNextHop);	
-	bool ifchange=update_NextHopSet(para,info);  //update Nexthop set
-	if(ifchange)
-		update_process(pLastFib,oldNextHopSet);
+	NextHop *oldNextHopSet=LastVisitNode(para,info);
+	if(oldNextHopSet!=NULL)
+		if(update_NextHopSet(para,info))
+			update_process(para->pLastFib,oldNextHopSet);
 }
 
 //this function only for those node is No-Leaf node
@@ -385,7 +395,6 @@ void Fib::NNC_SS_Double_search(FibTrie *pFibRoot,int oldInheritHop,int newInheri
 
 int Fib::priority_select(int oldSelect,int oldInherit,NextHop *ptmp)
 {
-	int selectHop;
 	if(oldSelect!=EMPTYHOP)
 	{
 		if(ifcontainFunc(oldSelect,ptmp))

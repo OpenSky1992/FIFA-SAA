@@ -98,7 +98,8 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 
 
 			LARGE_INTEGER frequence,privious,privious1;
-			if(!QueryPerformanceFrequency(&frequence))return 0;
+			if(!QueryPerformanceFrequency(&frequence))
+				return 0;
 			QueryPerformanceCounter(&privious); 
 
 			RibTrie *updateRib=tRib->Update(iNextHop,parameter.path,operate_type);

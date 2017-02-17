@@ -71,7 +71,7 @@ private:
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
 	
 	//update function
-	FibTrie *LastVisitNode(UpdatePara *para,UpdateRib *info);
+	NextHop *LastVisitNode(UpdatePara *para,UpdateRib *info);
 	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
 	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC
@@ -82,7 +82,7 @@ private:
 	FibTrie* withdrawLeaf(FibTrie *pFib,int upLevel);
 };
 
-/*three important recursive function 
+/*	three important recursive function 
 NsNoChange_standard_select		
 updateGoDown_Merge:				post-order travel
 update_select:					pre-order travel
