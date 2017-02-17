@@ -16,7 +16,7 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 	unsigned int	iPrefixLen;			//the length of PREFIX  
 	unsigned int	iNextHop;			//to store NEXTHOP in RIB file
 
-	char			operate_type_read;
+	char			operate_type;
 	int				readlines=0;
 	long			updatetimeused=0;
 
@@ -38,11 +38,11 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		iNextHop = -9;
 
 		memset(sPrefix,0,sizeof(sPrefix));
-		fin >> yearmonthday >> hourminsec >> operate_type_read >> sPrefix;//>> iNextHop;
+		fin >> yearmonthday >> hourminsec >> operate_type>> sPrefix;//>> iNextHop;
 
-		if('A'==operate_type_read)
+		if('A'==operate_type)
 			fin>>iNextHop;
-		if('W'!=operate_type_read&&'A'!=operate_type_read)
+		if('W'!=operate_type&&'A'!=operate_type)
 		{
 			printf("Format of update file Error, quit....\n");
 			getchar();
@@ -97,9 +97,13 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 			if(!QueryPerformanceFrequency(&frequence))return 0;
 			QueryPerformanceCounter(&privious); 
 
-			RibTrie *updateRibNode=tRib->Update(iNextHop,insert_C,operate_type_read,outsideOfRib,inheritHop);
-			if (NULL!=updateRibNode)
-				tFib->Update(iNextHop,insert_C,operate_type_read,updateRibNode,outsideOfRib,inheritHop);
+			RibTrie *updateRib=tRib->Update(iNextHop,insert_C,operate_type);
+			if (NULL!=updateRib)
+			{
+				UpdateRib *info=tRib->getUpdate();
+				info->pLastRib=updateRib;
+				tFib->Update(iNextHop,insert_C,operate_type,info);
+			}
 			QueryPerformanceCounter(&privious1);
 			updatetimeused+=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
 		}

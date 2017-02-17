@@ -4,6 +4,7 @@
 
 Rib::Rib(void)
 {
+	update=(updateRib*)malloc(sizeof(updateRib));
 	m_pTrie = (struct RibTrie*)malloc(RIBLEN);
 	if (NULL==m_pTrie)
 	{
@@ -13,6 +14,10 @@ Rib::Rib(void)
 	m_pTrie->pLeftChild = NULL;
 	m_pTrie->pRightChild = NULL;
 	m_pTrie->iNextHop = EMPTYHOP;
+	update->isLeaf=false;
+	update->outNumber=0;
+	update->inheritHop=DEFAULTHOP;
+	update->pLastRib=NULL;
 }
 
 
@@ -23,6 +28,11 @@ Rib::~Rib(void)
 RibTrie* Rib::getRibTrie()
 {
 	return m_pTrie;
+}
+
+UpdateRib* Rib::getUpdate()
+{
+	return update;
 }
 
 unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
@@ -103,12 +113,11 @@ unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 	return iEntryCount;
 }
 
-RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsideOfRib,int &inheritHop)
+RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 {
 	RibTrie *insertNode=m_pTrie;
 	int default_oldport=-1;
 	int default_newport=-1;
-	int outDeep=0;
 
 	//look up the location of the current node
 	//Attention : the update node may not exist in FIB
@@ -131,7 +140,6 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 				pNewNode->pRightChild=NULL;
 				pNewNode->pParent=insertNode;
 				insertNode->pLeftChild=pNewNode;
-				outDeep++;
 			}
 			insertNode=insertNode->pLeftChild;
 		}
@@ -152,7 +160,6 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 				pNewNode->pRightChild=NULL;
 				pNewNode->pParent=insertNode;
 				insertNode->pRightChild=pNewNode;
-				outDeep++;
 			}
 			insertNode=insertNode->pRightChild;
 		}
@@ -164,13 +171,16 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 		}
 	}
 
-	outsideOfRib=outDeep;
-	inheritHop=default_oldport;
+	update->isLeaf=false;
+	update->inheritHop=default_oldport;
+	update->withdrawLeafoldHop=EMPTYHOP;
 	if('A'==operation_type) 
 	{
 		if (insertNode->iNextHop==iNextHop)//invalid update
 			return NULL;
 		insertNode->iNextHop=iNextHop;//insert 
+		if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
+			update->isLeaf=true;
 		return insertNode;
 	}
 	else if (EMPTYHOP==insertNode->iNextHop)//invalid delete operation
@@ -181,8 +191,11 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type,int &outsi
 	{
 		if (insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
 		{
+			int outDeep;
+			update->withdrawLeafoldHop=insertNode->iNextHop;
 			insertNode=withdrawLeafNode(insertNode,outDeep);
-			outsideOfRib=outDeep;
+			update->isLeaf=true;
+			update->outNumber=outDeep;
 			return insertNode;
 		}
 		else

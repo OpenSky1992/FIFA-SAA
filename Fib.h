@@ -29,7 +29,7 @@ class Fib
 public:
 	Fib(void);
 	~Fib(void);
-	void Update(int iNextHop,char *insert_C,char operation_type,RibTrie* pLastRib,int outDeepRib,int inheritHop);	
+	void Update(int iNextHop,char *insert_C,char operation,UpdateRib *info);	
 	void ConstructFromRib(RibTrie* pRibTrie);
 	void Compress();
 
@@ -57,11 +57,11 @@ private:
 
 	//I sperate a old version big function into those little function
 	void update_process(FibTrie *,NextHop *);
-	bool update_NextHopSet(int iNextHop,char operation_type,RibTrie* pLastRib,int outDeep,int inheritHopRib,FibTrie *pLastFib);
+	bool update_NextHopSet(int iNextHop,char operation,FibTrie* pLastFib,UpdateRib *info);
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
 	
 	//update function
-	FibTrie *LastVisitNode(int iNextHop,char *insert_C,int &outDeepFib);
+	FibTrie *LastVisitNode(int iNextHop,char operation,char *insert_C,UpdateRib *info);
 	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
 	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC

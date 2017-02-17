@@ -17,6 +17,15 @@ struct RibTrie
 	int						iNextHop;				//Nexthop number
 };
 
+struct UpdateRib
+{
+	bool isLeaf;
+	int outNumber;    //when update node is leaf node,this variable represent 
+	int inheritHop;
+	int withdrawLeafoldHop;//only for withdraw leaf 
+	RibTrie* pLastRib;
+};
+
 class Rib
 {
 public:
@@ -24,12 +33,13 @@ public:
 	~Rib(void);
 	unsigned int BuildRibFromFile(string sFileName);
 	unsigned int ConvertBinToIP(string sBinFile,string sIpFile);
-	RibTrie* Update(int iNextHop,char *insert_C,char operation_type,int &out,int &inheritHop);
+	RibTrie* Update(int iNextHop,char *insert_C,char operation_type);
 	RibTrie* getRibTrie();
-
+	UpdateRib* getUpdate();
 
 private:
 	RibTrie* m_pTrie;				//RibTrie
+	UpdateRib* update;
 	RibTrie* withdrawLeafNode(RibTrie *pTrie,int &goUp);
 	void AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop);
 };
