@@ -58,8 +58,6 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		int iEnd=0;					//the end point of IP
 		int iFieldIndex = 3;		
 		int iLen=strlen(sPrefix);	//the length of Prefix
-		int outsideOfRib;
-		int inheritHop;
 
 		
 		if(iLen>0)

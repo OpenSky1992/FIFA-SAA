@@ -43,7 +43,9 @@ public:
 private:
 	RibTrie* m_pTrie;				//RibTrie
 	UpdateRib* update;
+
 	RibTrie* withdrawLeafNode(RibTrie *pTrie,int &goUp);
 	void AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop);
+	void CreateNewNode(RibTrie* &pTrie);
 };
 

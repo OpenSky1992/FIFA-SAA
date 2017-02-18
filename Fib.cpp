@@ -6,7 +6,6 @@ Fib::Fib(void)
 	CreateNewNode(m_pTrie);
 }
 
-
 Fib::~Fib(void)
 {
 }

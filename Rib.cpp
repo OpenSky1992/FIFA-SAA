@@ -5,24 +5,31 @@
 Rib::Rib(void)
 {
 	update=(UpdateRib*)malloc(sizeof(UpdateRib));
-	m_pTrie = (struct RibTrie*)malloc(RIBLEN);
-	if (NULL==m_pTrie)
-	{
-		printf("error 10..., exit(0)\n");
-		exit(0);
-	}
-	m_pTrie->pLeftChild = NULL;
-	m_pTrie->pRightChild = NULL;
-	m_pTrie->iNextHop = EMPTYHOP;
-	update->isLeaf=false;
+		update->isLeaf=false;
 	update->outNumber=0;
 	update->inheritHop=DEFAULTHOP;
 	update->pLastRib=NULL;
+
+	CreateNewNode(m_pTrie);
 }
 
 
 Rib::~Rib(void)
 {
+}
+
+void Rib::CreateNewNode(RibTrie* &pTrie)
+{
+	pTrie=(struct RibTrie*)malloc(RIBLEN);
+	if (NULL==m_pTrie)
+	{
+		printf("error 10..., exit(0)\n");
+		exit(0);
+	}
+	pTrie->pParent=NULL;
+	pTrie->pLeftChild = NULL;
+	pTrie->pRightChild = NULL;
+	pTrie->iNextHop = EMPTYHOP;
 }
 
 RibTrie* Rib::getRibTrie()
@@ -130,15 +137,8 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 			{//turn left, if left child is empty, create new node
 				if(UPDATE_WITHDRAW==operation_type)	
 					return NULL;
-				RibTrie* pNewNode=(RibTrie*)malloc(sizeof(RibTrie));
-				if (NULL==pNewNode)
-				{
-					printf("error 13..., exit(0)\n");
-					exit(0);
-				}
-				pNewNode->iNextHop=0;
-				pNewNode->pLeftChild=NULL;
-				pNewNode->pRightChild=NULL;
+				RibTrie* pNewNode;
+				CreateNewNode(pNewNode);
 				pNewNode->pParent=insertNode;
 				insertNode->pLeftChild=pNewNode;
 				outDeep++;
@@ -151,15 +151,8 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 			{
 				if(UPDATE_WITHDRAW==operation_type)	
 					return NULL;
-				RibTrie* pNewNode=(RibTrie*)malloc(sizeof(RibTrie));
-				if (NULL==pNewNode)
-				{
-					printf("error 14..., exit(0)\n");
-					exit(0);
-				}
-				pNewNode->iNextHop=0;
-				pNewNode->pLeftChild=NULL;
-				pNewNode->pRightChild=NULL;
+				RibTrie* pNewNode;
+				CreateNewNode(pNewNode);
 				pNewNode->pParent=insertNode;
 				insertNode->pRightChild=pNewNode;
 				outDeep++;
@@ -326,24 +319,15 @@ void Rib::AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNe
 {
 	//get the root of rib
 	RibTrie* pTrie = m_pTrie;
+	RibTrie* pTChild;
 	//locate every prefix in the rib tree
 	for (unsigned int i=0; i<iPrefixLen; i++){
 		//turn right
 		if(((lPrefix<<i) & HIGHTBIT)==HIGHTBIT){
 				//creat new node
 			if(pTrie->pRightChild == NULL){
-				RibTrie* pTChild = (struct RibTrie*)malloc(RIBLEN);
-				if (NULL==pTChild)
-				{
-					printf("error 11..., exit(0)\n");
-					exit(0);
-				}
-
-				//insert new node
+				CreateNewNode(pTChild);
 				pTChild->pParent = pTrie;
-				pTChild->pLeftChild = NULL;
-				pTChild->pRightChild = NULL;
-				pTChild->iNextHop= EMPTYHOP;
 				pTrie->pRightChild = pTChild;
 			}
 			//change the pointer
@@ -354,17 +338,8 @@ void Rib::AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNe
 		else{
 			//if left node is empty, creat a new node
 			if(pTrie->pLeftChild == NULL){
-				RibTrie* pTChild = (struct RibTrie*)malloc(RIBLEN);
-				if (NULL==pTChild)
-				{
-					printf("error 12..., exit(0)\n");
-					exit(0);
-				}
-				//insert new node
+				CreateNewNode(pTChild);
 				pTChild->pParent = pTrie;
-				pTChild->pLeftChild = NULL;
-				pTChild->pRightChild = NULL;
-				pTChild->iNextHop= EMPTYHOP;
 				pTrie->pLeftChild = pTChild;
 			}
 			//change the pointer
