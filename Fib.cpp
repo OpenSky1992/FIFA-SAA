@@ -229,6 +229,7 @@ void Fib::NextHopMerge(FibTrie *pTrie)
 
 			pRNextHop = pRNextHop->pNext;
 		}while(pRNextHop!=NULL);
+		pTrie->intersection=false;
 	}
 	else
 		pTrie->intersection=true;

@@ -218,6 +218,10 @@ void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
 	{
 		inheritOldHopFib=GetAncestorHop(pMostBNCF);
 		inheritNewHopFib=inheritOldHopFib;
+		if(pMostBNCF->pLeftChild==pMostTCF)
+			pMostBNCF->pRightChild->is_NNC_area=false;
+		else
+			pMostBNCF->pLeftChild->is_NNC_area=false;
 		pMostBNCF=pMostTCF;
 	}
 	update_select(pMostBNCF,inheritOldHopFib,inheritNewHopFib);
@@ -225,6 +229,8 @@ void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
 
 void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 {
+	if(NULL==pFib)
+		return ;
 	if(pFib->is_NNC_area)
 	{
 		NsNoChange_common_select(pFib,oldHop,newHop);
