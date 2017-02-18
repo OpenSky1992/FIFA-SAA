@@ -112,8 +112,8 @@ bool Fib::update_LeafNHS(UpdatePara *para,UpdateRib *info)
 			break;
 		case 1:
 			para->oldNHS=CopyNextHopSet(pLastVisit->pParent->pNextHop);
-			freeNextHopSet(pLastVisit->pNextHop->pNext);
-			pLastVisit->pNextHop->pNext=NULL;
+			freeNextHopSet(pLastVisit->pParent->pNextHop->pNext);
+			pLastVisit->pParent->pNextHop->pNext=NULL;
 			break;
 		default:
 			para->oldNHS->iVal=info->inheritHop;
