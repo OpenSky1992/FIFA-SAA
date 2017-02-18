@@ -89,25 +89,18 @@ bool Fib::update_LeafNHS(UpdatePara *para,UpdateRib *info)
 	FibTrie *pLastVisit=para->pLastFib;
 	if(UPDATE_ANNOUNCE==para->operate)
 	{
-		FibTrie *insertNode=para->insertNode;
 		int intNextHop=para->nextHop;
-		switch(info->outNumber)
-		{
-		case 0:
-			break;
-		case 1:
-			if(intNextHop==pLastVisit->pNextHop->iVal)
-				return false;
-			break;
-		default:
-			if(intNextHop==pLastVisit->pNextHop->iVal)
-				return false;
-			insertNode->iNewPort=intNextHop;
-			break;
-		}
+		FibTrie *insertNode=para->insertNode;
+		if(info->isNewCreate&&intNextHop==pLastVisit->pNextHop->iVal)
+			return false;
 		insertNode->intersection=true;
 		insertNode->pNextHop->iVal=intNextHop;
 		PassOneTwo(pLastVisit);
+		if(info->outNumber>=2)
+		{
+			insertNode->iNewPort=intNextHop;
+			return false;
+		}
 	}
 	else
 	{
@@ -120,7 +113,7 @@ bool Fib::update_LeafNHS(UpdatePara *para,UpdateRib *info)
 		case 1:
 			para->oldNHS=CopyNextHopSet(pLastVisit->pParent->pNextHop);
 			freeNextHopSet(pLastVisit->pNextHop->pNext);
-			pLastVisit->pNextHop->pNext=false;
+			pLastVisit->pNextHop->pNext=NULL;
 			break;
 		default:
 			para->oldNHS->iVal=info->inheritHop;
@@ -129,6 +122,8 @@ bool Fib::update_LeafNHS(UpdatePara *para,UpdateRib *info)
 		pLastVisit=withdrawLeaf(pLastVisit,info->outNumber);
 		para->pLastFib=pLastVisit;
 		pLastVisit->pNextHop->iVal=info->inheritHop;
+		if(info->outNumber>=2)
+			return false;
 	}
 	return true;
 }
@@ -263,11 +258,15 @@ void Fib::Update(UpdatePara *para,UpdateRib *info)
 {
 	LastVisitNode(para,info);
 	if(info->isLeaf)
+	{
 		if(update_LeafNHS(para,info))
 			update_process(para->pLastFib,para->oldNHS);
+	}
 	else
+	{
 		if(update_MiddleNHS(para,info))
 			update_process(para->pLastFib,para->oldNHS);
+	}
 }
 
 //this function only for those node is No-Leaf node

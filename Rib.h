@@ -22,6 +22,7 @@ struct RibTrie
 struct UpdateRib
 {
 	bool isLeaf;
+	bool isNewCreate;
 	int outNumber;    //when update node is leaf node,this variable represent 
 	int inheritHop;
 	int withdrawLeafoldHop;//only for withdraw leaf 

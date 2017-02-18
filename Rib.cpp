@@ -118,6 +118,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 	RibTrie *insertNode=m_pTrie;
 	int default_oldport=-1;
 	int default_newport=-1;
+	int outDeep=0;
 
 	//look up the location of the current node
 	//Attention : the update node may not exist in FIB
@@ -140,6 +141,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 				pNewNode->pRightChild=NULL;
 				pNewNode->pParent=insertNode;
 				insertNode->pLeftChild=pNewNode;
+				outDeep++;
 			}
 			insertNode=insertNode->pLeftChild;
 		}
@@ -160,6 +162,7 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 				pNewNode->pRightChild=NULL;
 				pNewNode->pParent=insertNode;
 				insertNode->pRightChild=pNewNode;
+				outDeep++;
 			}
 			insertNode=insertNode->pRightChild;
 		}
@@ -172,6 +175,13 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 	}
 
 	update->isLeaf=false;
+	if(outDeep>0)
+	{
+		update->isNewCreate=true;
+		update->isLeaf=true;
+	}
+	else
+		update->isNewCreate=false;
 	update->inheritHop=default_oldport;
 	update->withdrawLeafoldHop=EMPTYHOP;
 	if(UPDATE_ANNOUNCE==operation_type) 
