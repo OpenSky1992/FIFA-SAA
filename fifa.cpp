@@ -51,6 +51,9 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		}
 		parameter.nextHop=iNextHop;
 		parameter.operate=operate_type;
+		parameter.insertNode=NULL;
+		parameter.oldNHS=NULL;
+		parameter.pLastFib=NULL;
 		int iStart=0;				//the end point of IP
 		int iEnd=0;					//the end point of IP
 		int iFieldIndex = 3;		
