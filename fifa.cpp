@@ -110,7 +110,7 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 			else
 			{
 				if(tRib->updateWithdraw(parameter.path))
-					tFib->updateAnnounce(&parameter,tRib->getUpdate());
+					tFib->updateWithdraw(&parameter,tRib->getUpdate());
 			}
 			QueryPerformanceCounter(&privious1);
 			updatetimeused+=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
