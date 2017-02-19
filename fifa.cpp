@@ -59,7 +59,6 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		int iFieldIndex = 3;		
 		int iLen=strlen(sPrefix);	//the length of Prefix
 
-		
 		if(iLen>0)
 		{
 			readlines++;
@@ -96,7 +95,6 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 				else 
 					parameter.path[yi]='0';
 			}
-
 
 			LARGE_INTEGER frequence,privious,privious1;
 			if(!QueryPerformanceFrequency(&frequence))
