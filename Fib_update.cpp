@@ -31,7 +31,7 @@ void Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 {
 	FibTrie *insertNode=m_pTrie;
 	FibTrie *pNTrie,*pCounterTrie;
-	FibTrie* pLastVisit;
+	FibTrie *pLastVisit=m_pTrie;
 	int outDeep=0;
 
 	for (int i=0;i<(int)strlen(para->path);i++)
@@ -297,9 +297,16 @@ bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 	{
 		bool leftReturn=updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
 		bool rightReturn=updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
-		pFib->is_NNC_area=leftReturn&&rightReturn;
-		NextHopMerge(pFib);
-		return pFib->is_NNC_area;
+		bool newReturn=leftReturn&&rightReturn;
+		if(newReturn)
+		{//is_NCC_area of the most top no change node is set true,other node must recover to false
+			pFib->pLeftChild->is_NNC_area=false;
+			pFib->pRightChild->is_NNC_area=false;
+			pFib->is_NNC_area=true;//no change,no merge
+		}
+		else//some nexthop set change,so must merge
+			NextHopMerge(pFib);
+		return newReturn;
 	}
 	else
 	{//this is the same effect in the first if_statement.because Leaf node must have label
