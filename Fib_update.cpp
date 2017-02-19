@@ -78,7 +78,7 @@ void Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 	if(UPDATE_ANNOUNCE==para->operate)
 	{
 		info->outNumber=outDeep;
-		para->insertNode=insertNode;
+		para->a_insertNode=insertNode;
 	}
 	para->pLastFib=pLastVisit;
 	para->oldNHS=CopyNextHopSet(pLastVisit->pNextHop);
@@ -116,8 +116,8 @@ void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 
 	if(info->isLeaf)
 	{
-		FibTrie *insertNode=para->insertNode;
-		if(info->isNewCreate&&intNextHop==pLastFib->pNextHop->iVal)
+		FibTrie *insertNode=para->a_insertNode;
+		if(info->a_isNewCreate&&intNextHop==pLastFib->pNextHop->iVal)
 			return ;
 		insertNode->intersection=true;
 		insertNode->pNextHop->iVal=intNextHop;
@@ -156,7 +156,7 @@ void Fib::updateWithdraw(UpdatePara *para,UpdateRib *info)
 
 	if(info->isLeaf)
 	{
-		if(info->inheritHop==info->withdrawLeafoldHop)
+		if(info->inheritHop==info->w_LeafOldHop)
 			return ;
 		switch(info->outNumber)
 		{

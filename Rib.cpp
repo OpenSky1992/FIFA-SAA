@@ -9,8 +9,6 @@ Rib::Rib(void)
 	update->outNumber=0;
 	update->inheritHop=DEFAULTHOP;
 	update->pLastRib=NULL;
-
-	//CreateNewNode(m_pTrie);
 }
 
 
@@ -123,7 +121,7 @@ unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 {
 	RibTrie *insertNode=NULL;
-	int default_oldport=-1;
+	int default_oldport=DEFAULTHOP;
 	int outDeep=0;
 
 	if(NULL==m_pTrie)
@@ -164,27 +162,31 @@ bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 	update->isLeaf=false;
 	if(outDeep>0)
 	{
-		update->isNewCreate=true;
+		update->a_isNewCreate=true;
 		update->isLeaf=true;
 	}
 	else
-		update->isNewCreate=false;
+		update->a_isNewCreate=false;
 	
-
-	if (insertNode->iNextHop==iNextHop)//invalid update
+	if (insertNode->iNextHop==iNextHop)
 		return false;
-	insertNode->iNextHop=iNextHop;//insert 
+	insertNode->iNextHop=iNextHop;
 	if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
+	{
 		update->isLeaf=true;
-	update->pLastRib=insertNode;
+		update->pLastRib=NULL;//Leaf node don't need this parameter
+	}
+	else
+		update->pLastRib=insertNode;
 	return true;
 }
 
 bool Rib::updateWithdraw(char *insert_C)
 {
 	RibTrie *insertNode=m_pTrie;
-	int default_oldport=-1;
-
+	int default_oldport=DEFAULTHOP;
+	if(NULL==insertNode)    //rib trie is NULL
+		return false;
 	for (int i=0;i<(int)strlen(insert_C);i++)
 	{
 		if ('0'==insert_C[i])
@@ -205,75 +207,58 @@ bool Rib::updateWithdraw(char *insert_C)
 	}
 
 	update->inheritHop=default_oldport;
-	update->isNewCreate=false;
 	update->isLeaf=false;
-	update->withdrawLeafoldHop=EMPTYHOP;
 
-	if(insertNode==NULL)    //rib trie is NULL
-		return NULL;
 	if (EMPTYHOP==insertNode->iNextHop)//invalid delete operation
 		return false;
 	if (insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
 	{
-		int outDeep;
-		update->withdrawLeafoldHop=insertNode->iNextHop;
-		insertNode=withdrawLeafNode(insertNode,outDeep);
+		update->w_LeafOldHop=insertNode->iNextHop;
+		update->outNumber=withdrawLeafNode(insertNode);
 		update->isLeaf=true;
-		update->outNumber=outDeep;
-		update->pLastRib=insertNode;
-		return true;
+		update->pLastRib=NULL;  //Leaf node don't need this parameter
 	}
 	else
-	{
 		update->pLastRib=insertNode;
-		return true;
-	}
+	return true;
 }
 
-
-RibTrie* Rib::withdrawLeafNode(RibTrie *pLeaf,int &goUp)
+int Rib::withdrawLeafNode(RibTrie *pLeaf)
 {
 	int upLevel,breakwhile;
 	RibTrie *pTrie=pLeaf;
 	RibTrie *temp=pTrie->pParent;
 	breakwhile=1;
 	upLevel=0;
-	if(temp!=NULL)
+	while(true)
 	{
-		while(temp->pLeftChild==NULL||temp->pRightChild==NULL)
+		if(temp==NULL)
 		{
-			if(temp->iNextHop!=EMPTYHOP)
-			{
-				breakwhile=2;
-				break;
-			}
-			if(temp->pLeftChild==NULL)
-				temp->pRightChild=NULL;
-			else
-				temp->pLeftChild=NULL;
+			breakwhile=3;
 			free(pTrie);
-			pTrie=temp;
-			upLevel++;
-			temp=temp->pParent;
-			if(temp==NULL)
-			{
-				breakwhile=3;
-				break;
-			}
+			m_pTrie=NULL;
+			break;
 		}
+		if(temp->iNextHop!=EMPTYHOP)
+		{
+			breakwhile=2;
+			break;
+		}
+		if(NULL!=temp->pLeftChild&&NULL!=temp->pRightChild)
+		{
+			breakwhile=1;
+			break;
+		}
+		if(temp->pLeftChild==NULL)
+			temp->pRightChild=NULL;
+		else
+			temp->pLeftChild=NULL;
+		free(pTrie);
+		pTrie=temp;
+		upLevel++;
+		temp=temp->pParent;
 	}
-	else
-		breakwhile=4;
-	goUp=upLevel;
-	return temp;
-	//switch(breakwhile)
-	//{
-	//case 1:
-	//case 2:
-	//case 3:goUp=upLevel;return temp;break;
-	//case 4:break;
-	//default:goUp=0;return NULL;break;
-	//}
+	return upLevel;
 }
 
 unsigned int Rib::BuildRibFromFile(string sFileName)

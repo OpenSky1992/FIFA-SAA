@@ -31,7 +31,7 @@ struct UpdatePara
 	char path[PREFIX_LEN];
 	char operate;
 	FibTrie *pLastFib;
-	FibTrie *insertNode;   //only for annouce leaf
+	FibTrie *a_insertNode;   //only for annouce leaf
 	NextHop *oldNHS;       //NextHopSet
 };
 
@@ -45,8 +45,6 @@ public:
 	void updateWithdraw(UpdatePara *para,UpdateRib *info);
 	void ConstructFromRib(RibTrie* pRibTrie);
 	void Compress();
-
-
 
 private:
 	//Data fib trie
@@ -72,12 +70,12 @@ private:
 	void update_process(FibTrie *pLastFib,NextHop *oldNHS);
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
 	void LastVisitNode(UpdatePara *para,UpdateRib *info);
-	bool update_MiddleNHS(UpdatePara *para,UpdateRib *info);//NextHopSet
-	bool update_LeafNHS(UpdatePara *para,UpdateRib *info);
 	
 	
 	//update function
 	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
+	
+	//least change select
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
 	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC
 	void NNC_SS_Double_search(FibTrie *pFib,int oldHop,int newHop);

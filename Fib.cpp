@@ -261,7 +261,6 @@ void Fib::freeNextHopSet(NextHop *ptmp)
 	}
 }
 
-
 void Fib::PassThree(FibTrie *pTrie,int inheritHop)
 {
 	bool clear=true;

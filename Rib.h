@@ -22,10 +22,10 @@ struct RibTrie
 struct UpdateRib
 {
 	bool isLeaf;
-	bool isNewCreate;
 	int outNumber;    //when update node is leaf node,this variable represent 
 	int inheritHop;
-	int withdrawLeafoldHop;//only for withdraw leaf 
+	int w_LeafOldHop;//only for withdraw leaf 
+	bool a_isNewCreate;//only for announce event
 	RibTrie* pLastRib;
 };
 
@@ -47,7 +47,7 @@ private:
 
 
 
-	RibTrie* withdrawLeafNode(RibTrie *pTrie,int &goUp);
+	int withdrawLeafNode(RibTrie *pTrie);
 	void AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop);
 	void CreateNewNode(RibTrie* &pTrie);
 };
