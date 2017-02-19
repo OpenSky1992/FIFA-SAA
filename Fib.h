@@ -41,7 +41,8 @@ class Fib
 public:
 	Fib(void);
 	~Fib(void);
-	void Update(UpdatePara *para,UpdateRib *info);	
+	void updateAnnounce(UpdatePara *para,UpdateRib *info);
+	void updateWithdraw(UpdatePara *para,UpdateRib *info);
 	void ConstructFromRib(RibTrie* pRibTrie);
 	void Compress();
 

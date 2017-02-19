@@ -84,50 +84,6 @@ void Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 	para->oldNHS=CopyNextHopSet(pLastVisit->pNextHop);
 }
 
-bool Fib::update_LeafNHS(UpdatePara *para,UpdateRib *info)
-{
-	FibTrie *pLastVisit=para->pLastFib;
-	if(UPDATE_ANNOUNCE==para->operate)
-	{
-		int intNextHop=para->nextHop;
-		FibTrie *insertNode=para->insertNode;
-		if(info->isNewCreate&&intNextHop==pLastVisit->pNextHop->iVal)
-			return false;
-		insertNode->intersection=true;
-		insertNode->pNextHop->iVal=intNextHop;
-		PassOneTwo(pLastVisit);
-		if(info->outNumber>=2)
-		{
-			insertNode->iNewPort=intNextHop;
-			return false;
-		}
-	}
-	else
-	{
-		if(info->inheritHop==info->withdrawLeafoldHop)
-			return false;
-		switch(info->outNumber)
-		{
-		case 0:
-			break;
-		case 1:
-			para->oldNHS=CopyNextHopSet(pLastVisit->pParent->pNextHop);
-			freeNextHopSet(pLastVisit->pParent->pNextHop->pNext);
-			pLastVisit->pParent->pNextHop->pNext=NULL;
-			break;
-		default:
-			para->oldNHS->iVal=info->inheritHop;
-			break;
-		}
-		pLastVisit=withdrawLeaf(pLastVisit,info->outNumber);
-		para->pLastFib=pLastVisit;
-		pLastVisit->pNextHop->iVal=info->inheritHop;
-		if(info->outNumber>=2)
-			return false;
-	}
-	return true;
-}
-
 NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 {
 	NextHop *pCopyHead,*pOld,*pCopy;
@@ -150,36 +106,91 @@ NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 	return pCopyHead;
 }
 
-bool Fib::update_MiddleNHS(UpdatePara *para,UpdateRib *info)
+void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 {
-	RibTrie *pLastRib=info->pLastRib;
-	int inherit=info->inheritHop;
+	FibTrie *pLastFib;
 	
-	FibTrie* pLastFib=para->pLastFib;
-	if(UPDATE_ANNOUNCE==para->operate)
+	LastVisitNode(para,info);
+	pLastFib=para->pLastFib;
+	int intNextHop=para->nextHop;
+
+	if(info->isLeaf)
 	{
-		int intNextHop=para->nextHop;
+		FibTrie *insertNode=para->insertNode;
+		if(info->isNewCreate&&intNextHop==pLastFib->pNextHop->iVal)
+			return ;
+		insertNode->intersection=true;
+		insertNode->pNextHop->iVal=intNextHop;
+		PassOneTwo(pLastFib);
+		if(info->outNumber>=2)
+		{
+			insertNode->iNewPort=intNextHop;
+			return ;
+		}
+	}
+	else
+	{
+		RibTrie *pLastRib;
+		pLastRib=info->pLastRib;
+		int inherit=info->inheritHop;
+
 		if(pLastRib->iNextHop==EMPTYHOP)
 			if(inherit==intNextHop)
-				return false;				
+				return ;				
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,intNextHop))
 		{
 			pLastRib->iNextHop=intNextHop;
-			return false;
+			return ;
 		}
 		pLastRib->iNextHop=intNextHop;
 	}
+	update_process(para->pLastFib,para->oldNHS);
+}
+
+void Fib::updateWithdraw(UpdatePara *para,UpdateRib *info)
+{
+	FibTrie *pLastFib;
+	LastVisitNode(para,info);
+	pLastFib=para->pLastFib;
+
+	if(info->isLeaf)
+	{
+		if(info->inheritHop==info->withdrawLeafoldHop)
+			return ;
+		switch(info->outNumber)
+		{
+		case 0:
+			break;
+		case 1:
+			para->oldNHS=CopyNextHopSet(pLastFib->pParent->pNextHop);
+			freeNextHopSet(pLastFib->pParent->pNextHop->pNext);
+			pLastFib->pParent->pNextHop->pNext=NULL;
+			break;
+		default:
+			para->oldNHS->iVal=info->inheritHop;
+			break;
+		}
+		pLastFib=withdrawLeaf(pLastFib,info->outNumber);
+		para->pLastFib=pLastFib;
+		pLastFib->pNextHop->iVal=info->inheritHop;
+		if(info->outNumber>=2)
+			return ;
+	}
 	else
 	{
+		RibTrie *pLastRib;
+		pLastRib=info->pLastRib;
+		int inherit=info->inheritHop;
+
 		if(pLastRib->iNextHop!=EMPTYHOP)
 			if(pLastRib->iNextHop==inherit)
-				return false;
+				return ;
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
-			return false;
+			return ;
 	}
-	return true;
+	update_process(para->pLastFib,para->oldNHS);
 }
 
 void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
@@ -251,21 +262,6 @@ void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 			pFib->iNewPort=EMPTYHOP;
 		update_select(pFib->pLeftChild,inheritOldHopFib,inheritNewHopFib);
 		update_select(pFib->pRightChild,inheritOldHopFib,inheritNewHopFib);
-	}
-}
-
-void Fib::Update(UpdatePara *para,UpdateRib *info)
-{
-	LastVisitNode(para,info);
-	if(info->isLeaf)
-	{
-		if(update_LeafNHS(para,info))
-			update_process(para->pLastFib,para->oldNHS);
-	}
-	else
-	{
-		if(update_MiddleNHS(para,info))
-			update_process(para->pLastFib,para->oldNHS);
 	}
 }
 
@@ -408,7 +404,7 @@ void Fib::NNC_SS_Double_search(FibTrie *pFibRoot,int oldInheritHop,int newInheri
 
 int Fib::priority_select(int oldSelect,int oldInherit,NextHop *ptmp)
 {
-	if(oldSelect!=EMPTYHOP)
+	if(EMPTYHOP!=oldSelect)
 	{
 		if(ifcontainFunc(oldSelect,ptmp))
 			return oldSelect;

@@ -102,13 +102,15 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 			if(!QueryPerformanceFrequency(&frequence))
 				return 0;
 			QueryPerformanceCounter(&privious); 
-
-			RibTrie *updateRib=tRib->Update(iNextHop,parameter.path,operate_type);
-			if (NULL!=updateRib)
+			if(UPDATE_ANNOUNCE==operate_type)
 			{
-				UpdateRib *info=tRib->getUpdate();
-				info->pLastRib=updateRib;
-				tFib->Update(&parameter,info);
+				if(tRib->updateAnnounce(iNextHop,parameter.path))
+					tFib->updateAnnounce(&parameter,tRib->getUpdate());
+			}
+			else
+			{
+				if(tRib->updateWithdraw(parameter.path))
+					tFib->updateAnnounce(&parameter,tRib->getUpdate());
 			}
 			QueryPerformanceCounter(&privious1);
 			updatetimeused+=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;

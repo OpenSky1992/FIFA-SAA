@@ -36,13 +36,16 @@ public:
 	~Rib(void);
 	unsigned int BuildRibFromFile(string sFileName);
 	unsigned int ConvertBinToIP(string sBinFile,string sIpFile);
-	RibTrie* Update(int iNextHop,char *insert_C,char operation_type);
+	bool updateAnnounce(int iNextHop,char *insert_C);
+	bool updateWithdraw(char *insert_C);
 	RibTrie* getRibTrie();
 	UpdateRib* getUpdate();
 
 private:
 	RibTrie* m_pTrie;				//RibTrie
 	UpdateRib* update;
+
+
 
 	RibTrie* withdrawLeafNode(RibTrie *pTrie,int &goUp);
 	void AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop);

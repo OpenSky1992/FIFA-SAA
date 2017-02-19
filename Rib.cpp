@@ -5,12 +5,12 @@
 Rib::Rib(void)
 {
 	update=(UpdateRib*)malloc(sizeof(UpdateRib));
-		update->isLeaf=false;
+	update->isLeaf=false;
 	update->outNumber=0;
 	update->inheritHop=DEFAULTHOP;
 	update->pLastRib=NULL;
 
-	CreateNewNode(m_pTrie);
+	//CreateNewNode(m_pTrie);
 }
 
 
@@ -120,23 +120,21 @@ unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 	return iEntryCount;
 }
 
-RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
+bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 {
-	RibTrie *insertNode=m_pTrie;
+	RibTrie *insertNode=NULL;
 	int default_oldport=-1;
-	int default_newport=-1;
 	int outDeep=0;
 
-	//look up the location of the current node
-	//Attention : the update node may not exist in FIB
+	if(NULL==m_pTrie)
+		CreateNewNode(m_pTrie);
+	insertNode=m_pTrie;
 	for (int i=0;i<(int)strlen(insert_C);i++)
 	{
 		if ('0'==insert_C[i])
 		{
 			if (NULL==insertNode->pLeftChild)
 			{//turn left, if left child is empty, create new node
-				if(UPDATE_WITHDRAW==operation_type)	
-					return NULL;
 				RibTrie* pNewNode;
 				CreateNewNode(pNewNode);
 				pNewNode->pParent=insertNode;
@@ -149,8 +147,6 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 		{//turn right, if right child is empty, create new node
 			if (NULL==insertNode->pRightChild)
 			{
-				if(UPDATE_WITHDRAW==operation_type)	
-					return NULL;
 				RibTrie* pNewNode;
 				CreateNewNode(pNewNode);
 				pNewNode->pParent=insertNode;
@@ -159,14 +155,12 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 			}
 			insertNode=insertNode->pRightChild;
 		}
-		if (insertNode->iNextHop!=0)
-			default_newport=insertNode->iNextHop;
 		if (insertNode->pParent!=NULL)
-		{
-			if (insertNode->pParent->iNextHop!=0)default_oldport=insertNode->pParent->iNextHop;
-		}
+			if (insertNode->pParent->iNextHop!=0)
+				default_oldport=insertNode->pParent->iNextHop;
 	}
 
+	update->inheritHop=default_oldport;
 	update->isLeaf=false;
 	if(outDeep>0)
 	{
@@ -175,38 +169,67 @@ RibTrie * Rib::Update(int iNextHop,char *insert_C,char operation_type)
 	}
 	else
 		update->isNewCreate=false;
-	update->inheritHop=default_oldport;
-	update->withdrawLeafoldHop=EMPTYHOP;
-	if(UPDATE_ANNOUNCE==operation_type) 
+	
+
+	if (insertNode->iNextHop==iNextHop)//invalid update
+		return false;
+	insertNode->iNextHop=iNextHop;//insert 
+	if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
+		update->isLeaf=true;
+	update->pLastRib=insertNode;
+	return true;
+}
+
+bool Rib::updateWithdraw(char *insert_C)
+{
+	RibTrie *insertNode=m_pTrie;
+	int default_oldport=-1;
+
+	for (int i=0;i<(int)strlen(insert_C);i++)
 	{
-		if (insertNode->iNextHop==iNextHop)//invalid update
-			return NULL;
-		insertNode->iNextHop=iNextHop;//insert 
-		if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
-			update->isLeaf=true;
-		return insertNode;
-	}
-	else if (EMPTYHOP==insertNode->iNextHop)//invalid delete operation
-	{
-		return NULL;
-	}
-	else //Withdraw
-	{
-		if (insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
+		if ('0'==insert_C[i])
 		{
-			int outDeep;
-			update->withdrawLeafoldHop=insertNode->iNextHop;
-			insertNode=withdrawLeafNode(insertNode,outDeep);
-			update->isLeaf=true;
-			update->outNumber=outDeep;
-			return insertNode;
+			if (NULL==insertNode->pLeftChild)
+				return false;
+			insertNode=insertNode->pLeftChild;
 		}
 		else
 		{
-			return insertNode;
+			if (NULL==insertNode->pRightChild)
+				return false;
+			insertNode=insertNode->pRightChild;
 		}
+		if (insertNode->pParent!=NULL)
+			if (insertNode->pParent->iNextHop!=0)
+				default_oldport=insertNode->pParent->iNextHop;
+	}
+
+	update->inheritHop=default_oldport;
+	update->isNewCreate=false;
+	update->isLeaf=false;
+	update->withdrawLeafoldHop=EMPTYHOP;
+
+	if(insertNode==NULL)    //rib trie is NULL
+		return NULL;
+	if (EMPTYHOP==insertNode->iNextHop)//invalid delete operation
+		return false;
+	if (insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
+	{
+		int outDeep;
+		update->withdrawLeafoldHop=insertNode->iNextHop;
+		insertNode=withdrawLeafNode(insertNode,outDeep);
+		update->isLeaf=true;
+		update->outNumber=outDeep;
+		update->pLastRib=insertNode;
+		return true;
+	}
+	else
+	{
+		update->pLastRib=insertNode;
+		return true;
 	}
 }
+
 
 RibTrie* Rib::withdrawLeafNode(RibTrie *pLeaf,int &goUp)
 {
@@ -265,8 +288,6 @@ unsigned int Rib::BuildRibFromFile(string sFileName)
 	
 	ifstream fin(sFileName.c_str());
 	while (!fin.eof()) {
-
-		
 		lPrefix = 0;
 		iPrefixLen = 0;
 		iNextHop = EMPTYHOP;
@@ -280,7 +301,6 @@ unsigned int Rib::BuildRibFromFile(string sFileName)
 		int iFieldIndex = 3;		
 		int iLen=strlen(sPrefix);	//The length of PREFIX
 
-		
 		if(iLen>0){
 			iEntryCount++;
 			for ( int i=0; i<iLen; i++ ){
@@ -306,7 +326,6 @@ unsigned int Rib::BuildRibFromFile(string sFileName)
 					iPrefixLen=atoi(strVal.c_str());
 				}
 			}
-		
 			AddNode(lPrefix,iPrefixLen,iNextHop);
 		}
 	}
@@ -318,10 +337,13 @@ unsigned int Rib::BuildRibFromFile(string sFileName)
 void Rib::AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop)
 {
 	//get the root of rib
-	RibTrie* pTrie = m_pTrie;
+	RibTrie* pTrie=NULL;
 	RibTrie* pTChild;
 	//locate every prefix in the rib tree
-	for (unsigned int i=0; i<iPrefixLen; i++){
+	if(NULL==m_pTrie)
+		CreateNewNode(m_pTrie);
+	pTrie=m_pTrie;
+	for(unsigned int i=0; i<iPrefixLen; i++){
 		//turn right
 		if(((lPrefix<<i) & HIGHTBIT)==HIGHTBIT){
 				//creat new node
