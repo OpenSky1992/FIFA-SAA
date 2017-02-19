@@ -204,12 +204,12 @@ void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
 		freeNextHopSet(oldNextHopSet);
 		pMostTCF=pMostBNCF;
 		pMostBNCF=pMostBNCF->pParent;
+		if(pMostBNCF==NULL)
+			break;
 		if(pMostBNCF->pLeftChild==pMostTCF)
 			pMostBNCF->pRightChild->is_NNC_area=true;
 		else
 			pMostBNCF->pLeftChild->is_NNC_area=true;
-		if(pMostBNCF==NULL)
-			break;
 		oldNextHopSet=CopyNextHopSet(pMostBNCF->pNextHop);
 		NextHopMerge(pMostBNCF);
 	}

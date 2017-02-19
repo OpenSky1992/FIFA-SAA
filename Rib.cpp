@@ -9,8 +9,8 @@ Rib::Rib(void)
 	update->outNumber=0;
 	update->inheritHop=DEFAULTHOP;
 	update->pLastRib=NULL;
+	CreateNewNode(m_pTrie);
 }
-
 
 Rib::~Rib(void)
 {
@@ -120,13 +120,10 @@ unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 
 bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 {
-	RibTrie *insertNode=NULL;
+	RibTrie *insertNode=m_pTrie;
 	int default_oldport=DEFAULTHOP;
 	int outDeep=0;
 
-	if(NULL==m_pTrie)
-		CreateNewNode(m_pTrie);
-	insertNode=m_pTrie;
 	for (int i=0;i<(int)strlen(insert_C);i++)
 	{
 		if ('0'==insert_C[i])
@@ -185,8 +182,6 @@ bool Rib::updateWithdraw(char *insert_C)
 {
 	RibTrie *insertNode=m_pTrie;
 	int default_oldport=DEFAULTHOP;
-	if(NULL==insertNode)    //rib trie is NULL
-		return false;
 	for (int i=0;i<(int)strlen(insert_C);i++)
 	{
 		if ('0'==insert_C[i])
@@ -235,8 +230,6 @@ int Rib::withdrawLeafNode(RibTrie *pLeaf)
 		if(temp==NULL)
 		{
 			breakwhile=3;
-			free(pTrie);
-			m_pTrie=NULL;
 			break;
 		}
 		if(temp->iNextHop!=EMPTYHOP)
