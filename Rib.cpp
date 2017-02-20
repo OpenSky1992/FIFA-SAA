@@ -237,10 +237,10 @@ int Rib::withdrawLeafNode(RibTrie *pLeaf)
 			breakwhile=2;
 		if(NULL!=temp->pLeftChild&&NULL!=temp->pRightChild)
 			breakwhile=1;
-		if(temp->pLeftChild==NULL)
-			temp->pRightChild=NULL;
-		else
+		if(temp->pLeftChild==pTrie)
 			temp->pLeftChild=NULL;
+		else
+			temp->pRightChild=NULL;
 		free(pTrie);
 		if(breakwhile>=1)
 			break;
