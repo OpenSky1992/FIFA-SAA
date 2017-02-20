@@ -223,30 +223,27 @@ int Rib::withdrawLeafNode(RibTrie *pLeaf)
 	int upLevel,breakwhile;
 	RibTrie *pTrie=pLeaf;
 	RibTrie *temp=pTrie->pParent;
-	breakwhile=1;
+	breakwhile=0;
 	upLevel=0;
 	while(true)
 	{
 		if(temp==NULL)
 		{
 			breakwhile=3;
+			//free(pTrie);
 			break;
 		}
 		if(temp->iNextHop!=EMPTYHOP)
-		{
 			breakwhile=2;
-			break;
-		}
 		if(NULL!=temp->pLeftChild&&NULL!=temp->pRightChild)
-		{
 			breakwhile=1;
-			break;
-		}
 		if(temp->pLeftChild==NULL)
 			temp->pRightChild=NULL;
 		else
 			temp->pLeftChild=NULL;
 		free(pTrie);
+		if(breakwhile>=1)
+			break;
 		pTrie=temp;
 		upLevel++;
 		temp=temp->pParent;
@@ -315,12 +312,8 @@ unsigned int Rib::BuildRibFromFile(string sFileName)
 void Rib::AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNextHop)
 {
 	//get the root of rib
-	RibTrie* pTrie=NULL;
+	RibTrie* pTrie=m_pTrie;
 	RibTrie* pTChild;
-	//locate every prefix in the rib tree
-	if(NULL==m_pTrie)
-		CreateNewNode(m_pTrie);
-	pTrie=m_pTrie;
 	for(unsigned int i=0; i<iPrefixLen; i++){
 		//turn right
 		if(((lPrefix<<i) & HIGHTBIT)==HIGHTBIT){

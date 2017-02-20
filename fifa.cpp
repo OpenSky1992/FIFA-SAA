@@ -29,7 +29,7 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 	{
 		printf("!!!error!!!!  no file named:%s\n",sFileName);
 	}
-	cout<<"parsing file:"<<sFileName;
+	cout<<"parsing file:"<<sFileName<<endl;
 	UpdatePara parameter;
 
 	while (!fin.eof()) 
@@ -112,9 +112,10 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 			}
 			QueryPerformanceCounter(&privious1);
 			updatetimeused+=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
+			cout<<readlines<<endl;
 		}
-
 	}
+	cout<<readlines<<":"<<updatetimeused<<endl;
 	fin.close();
 	return readlines;
 }
@@ -122,10 +123,11 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 
 int main()
 {
+	int pause;
 	Rib tRib=Rib();
 	Fib tFib=Fib();
-	bool ipFormat=false;
-	char *ribFile="rib2.txt";
+	bool ipFormat=true;
+	char *ribFile="rib.txt";
 	char *ribFileIP="rib2_ip.txt";
 	
 	if(ipFormat)
@@ -138,5 +140,6 @@ int main()
 	tFib.ConstructFromRib(tRib.getRibTrie());
 	tFib.Compress();
 	updateFromFile("updates2.txt",&tRib,&tFib);
+	cin>>pause;
 	return 0;
 }

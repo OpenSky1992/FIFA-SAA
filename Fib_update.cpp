@@ -424,7 +424,11 @@ FibTrie* Fib::withdrawLeaf(FibTrie *pFib,int upLevel)
 {
 	FibTrie *pTrie=pFib;
 	for(int i=0;i<upLevel;i++)
+	{
+		if(pTrie->pParent==NULL)
+			break;
 		pTrie=pTrie->pParent;
+	}
 	FreeSubTree(pTrie->pLeftChild);
 	FreeSubTree(pTrie->pRightChild);
 	pTrie->pLeftChild=NULL;
