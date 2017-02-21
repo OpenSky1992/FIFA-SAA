@@ -47,7 +47,7 @@ void Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 				CreateNewNode(pCounterTrie);
 				insertNode->pRightChild=pCounterTrie;
 				pCounterTrie->pParent=insertNode;
-				pCounterTrie->iNewPort=pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
+				pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
 				pCounterTrie->intersection=true;
 				outDeep++;
 			}
@@ -66,7 +66,7 @@ void Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 				CreateNewNode(pCounterTrie);
 				insertNode->pLeftChild=pCounterTrie;
 				pCounterTrie->pParent=insertNode;
-				pCounterTrie->iNewPort=pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
+				pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
 				pCounterTrie->intersection=true;
 				outDeep++;
 			}
@@ -364,7 +364,7 @@ void Fib::NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop)
 			return ;
 		}
 	}
-}
+}  
 
 void Fib::NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop)
 {
