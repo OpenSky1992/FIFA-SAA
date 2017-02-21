@@ -131,14 +131,14 @@ void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 			if(intNextHop==pLastFib->pNextHop->iVal)
 				return ;
 			else
-				PassOneTwo(pLastFib);
+				PassOneTwo(pLastFib);//not only compute the nexthop set of the pLastFib,but also change the intersection(property) of the pLastFib 
 			break;
 		default:
 			insertNode->intersection=true;
 			insertNode->pNextHop->iVal=intNextHop;
+			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
 			if(intNextHop!=pLastFib->pNextHop->iVal)
 				insertNode->iNewPort=intNextHop;
-			PassOneTwo(pLastFib);
 			return;
 		}
 	}
@@ -154,6 +154,7 @@ void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,intNextHop))
 		{
+			pLastFib->is_NNC_area=false;
 			pLastRib->iNextHop=intNextHop;
 			return ;
 		}
@@ -210,7 +211,10 @@ void Fib::updateWithdraw(UpdatePara *para,UpdateRib *info)
 				return ;
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
+		{
+			pLastFib->is_NNC_area=false;
 			return ;
+		}
 	}
 	update_process(para->pLastFib,para->oldNHS);
 }
@@ -299,14 +303,14 @@ bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 	}
 	if(pRib->pLeftChild==NULL&&pRib->pRightChild!=NULL)
 	{
-		pFib->pLeftChild->iNewPort=pFib->pLeftChild->pNextHop->iVal=inheritHop;
+		pFib->pLeftChild->pNextHop->iVal=inheritHop;
 		updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
 		NextHopMerge(pFib);
 		return false;
 	}
 	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild==NULL)
 	{
-		pFib->pRightChild->iNewPort=pFib->pRightChild->pNextHop->iVal=inheritHop;
+		pFib->pRightChild->pNextHop->iVal=inheritHop;
 		updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
 		NextHopMerge(pFib);
 		return false;
