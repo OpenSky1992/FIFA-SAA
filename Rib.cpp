@@ -158,12 +158,7 @@ bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 	update->inheritHop=default_oldport;
 	update->isLeaf=false;
 	if(outDeep>0)
-	{
-		update->a_isNewCreate=true;
 		update->isLeaf=true;
-	}
-	else
-		update->a_isNewCreate=false;
 	
 	if (insertNode->iNextHop==iNextHop)
 		return false;

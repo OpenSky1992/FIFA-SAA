@@ -104,8 +104,10 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 
 		CreateNewNode(pNTrie);
 		pNTrie->pParent=pTrie;
-		if(pTrie->pNextHop->iVal==EMPTYHOP)pNTrie->iNewPort=pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
-		else							   pNTrie->iNewPort=pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
+		if(pTrie->pNextHop->iVal==EMPTYHOP)
+			pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
+		else							   
+			pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
 		pNTrie->intersection=true;
 		pTrie->pLeftChild=pNTrie;
 
@@ -117,8 +119,10 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 		
 		CreateNewNode(pNTrie);
 		pNTrie->pParent=pTrie;
-		if(pTrie->pNextHop->iVal==0)pNTrie->iNewPort=pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
-		else						pNTrie->iNewPort=pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
+		if(pTrie->pNextHop->iVal==EMPTYHOP)
+			pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
+		else						
+			pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
 		pNTrie->intersection=true;
 		pTrie->pRightChild=pNTrie;
 
@@ -264,7 +268,8 @@ void Fib::freeNextHopSet(NextHop *ptmp)
 void Fib::PassThree(FibTrie *pTrie,int inheritHop)
 {
 	bool clear=true;
-	if (pTrie==NULL)return;
+	if (pTrie==NULL)
+		return;
 
 	if(pTrie->intersection)
 	{
@@ -276,13 +281,7 @@ void Fib::PassThree(FibTrie *pTrie,int inheritHop)
 		}
 	}
 	if(clear)
-	{
 		pTrie->iNewPort=EMPTYHOP;
-		//pTrie->intersection=false;
-	}
-
-	//freeNextHopSet(pTrie->pNextHop->pNext);
-	//pTrie->pNextHop->pNext=NULL;
 
 	PassThree(pTrie->pLeftChild, inheritHop);
 	PassThree(pTrie->pRightChild, inheritHop);

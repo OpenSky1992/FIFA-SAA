@@ -25,7 +25,7 @@ struct UpdateRib
 	int outNumber;    //when update node is leaf node,this variable represent 
 	int inheritHop;
 	int w_LeafOldHop;//only for withdraw leaf 
-	bool a_isNewCreate;//only for announce event
+	//bool a_isNewCreate;//only for announce event
 	RibTrie* pLastRib;
 };
 

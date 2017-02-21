@@ -117,15 +117,29 @@ void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 	if(info->isLeaf)
 	{
 		FibTrie *insertNode=para->a_insertNode;
-		if(info->a_isNewCreate&&intNextHop==pLastFib->pNextHop->iVal)
-			return ;
-		insertNode->intersection=true;
-		insertNode->pNextHop->iVal=intNextHop;
-		PassOneTwo(pLastFib);
-		if(info->outNumber>=2)
+		switch(info->outNumber)
 		{
-			insertNode->iNewPort=intNextHop;
-			return ;
+		case 0:
+			if(intNextHop==pLastFib->pNextHop->iVal)
+				return ;
+			else
+				insertNode->pNextHop->iVal=intNextHop;
+			break;
+		case 1:
+			insertNode->intersection=true;
+			insertNode->pNextHop->iVal=intNextHop;			//pLastFib->intersection=false;
+			if(intNextHop==pLastFib->pNextHop->iVal)
+				return ;
+			else
+				PassOneTwo(pLastFib);
+			break;
+		default:
+			insertNode->intersection=true;
+			insertNode->pNextHop->iVal=intNextHop;
+			if(intNextHop!=pLastFib->pNextHop->iVal)
+				insertNode->iNewPort=intNextHop;
+			PassOneTwo(pLastFib);
+			return;
 		}
 	}
 	else
@@ -156,26 +170,34 @@ void Fib::updateWithdraw(UpdatePara *para,UpdateRib *info)
 
 	if(info->isLeaf)
 	{
-		if(info->inheritHop==info->w_LeafOldHop)
-			return ;
 		switch(info->outNumber)
 		{
 		case 0:
+			if(info->inheritHop==info->w_LeafOldHop)
+				return ;
+			else
+				pLastFib->pNextHop->iVal=info->inheritHop;
 			break;
 		case 1:
-			para->oldNHS=CopyNextHopSet(pLastFib->pParent->pNextHop);
-			freeNextHopSet(pLastFib->pParent->pNextHop->pNext);
-			pLastFib->pParent->pNextHop->pNext=NULL;
+			if(info->inheritHop==info->w_LeafOldHop)
+			{
+				withdrawLeaf(pLastFib,1);
+				return ;
+			}
+			else
+			{
+				para->oldNHS=CopyNextHopSet(pLastFib->pParent->pNextHop);
+				pLastFib=withdrawLeaf(pLastFib,1);
+				para->pLastFib=pLastFib;
+				pLastFib->pNextHop->iVal=info->inheritHop;
+				freeNextHopSet(pLastFib->pNextHop->pNext);
+				pLastFib->pNextHop->pNext=NULL;
+			}
 			break;
 		default:
-			para->oldNHS->iVal=info->inheritHop;
-			break;
-		}
-		pLastFib=withdrawLeaf(pLastFib,info->outNumber);
-		para->pLastFib=pLastFib;
-		pLastFib->pNextHop->iVal=info->inheritHop;
-		if(info->outNumber>=2)
+			withdrawLeaf(pLastFib,info->outNumber);
 			return ;
+		}
 	}
 	else
 	{
