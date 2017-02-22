@@ -150,7 +150,10 @@ void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 
 		if(pLastRib->iNextHop==EMPTYHOP)
 			if(inherit==intNextHop)
-				return ;				
+			{
+				pLastRib->iNextHop=intNextHop;
+				return ;
+			}
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,intNextHop))
 		{
@@ -208,7 +211,10 @@ void Fib::updateWithdraw(UpdatePara *para,UpdateRib *info)
 
 		if(pLastRib->iNextHop!=EMPTYHOP)
 			if(pLastRib->iNextHop==inherit)
+			{
+				pLastRib->iNextHop=EMPTYHOP;
 				return ;
+			}
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
 		{
@@ -248,13 +254,21 @@ void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
 	}
 	else
 	{
-		inheritOldHopFib=GetAncestorHop(pMostBNCF);
-		inheritNewHopFib=inheritOldHopFib;
-		if(pMostBNCF->pLeftChild==pMostTCF)
-			pMostBNCF->pRightChild->is_NNC_area=false;
+		if(pMostTCF!=NULL)
+		{//inheritOldHopFib must came from its father
+			inheritOldHopFib=GetAncestorHop(pMostBNCF);
+			inheritNewHopFib=inheritOldHopFib;
+			if(pMostBNCF->pLeftChild==pMostTCF)
+				pMostBNCF->pRightChild->is_NNC_area=false;
+			else
+				pMostBNCF->pLeftChild->is_NNC_area=false;
+			pMostBNCF=pMostTCF;
+		}
 		else
-			pMostBNCF->pLeftChild->is_NNC_area=false;
-		pMostBNCF=pMostTCF;
+		{//inheritOldHopFib must came from its father
+			inheritOldHopFib=GetAncestorHop(pMostBNCF->pParent);
+			inheritNewHopFib=inheritOldHopFib;
+		}
 	}
 	update_select(pMostBNCF,inheritOldHopFib,inheritNewHopFib);
 }

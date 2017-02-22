@@ -162,9 +162,9 @@ bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 	
 	if (insertNode->iNextHop==iNextHop)
 		return false;
-	insertNode->iNextHop=iNextHop;
 	if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
 	{
+		insertNode->iNextHop=iNextHop;
 		update->isLeaf=true;
 		update->pLastRib=NULL;//Leaf node don't need this parameter
 	}
