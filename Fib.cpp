@@ -8,6 +8,12 @@ Fib::Fib(void)
 
 Fib::~Fib(void)
 {
+	FreeSubTree(m_pTrie);
+}
+
+FibTrie* Fib::getFibRoot()
+{
+	return m_pTrie;
 }
 
 void Fib::ConstructFromRib(RibTrie* pRibTrie)
@@ -298,14 +304,14 @@ void Fib::Compress()
 
 void Fib::FreeSubTree(FibTrie *FreeNode)
 {
-	if (NULL==FreeNode)return;
-	
+	if (NULL==FreeNode)
+		return;
 	FreeSubTree(FreeNode->pLeftChild);
 	FreeSubTree(FreeNode->pRightChild);
-
-	if (FreeNode->pParent->pLeftChild==FreeNode)FreeNode->pParent->pLeftChild=NULL;
-	else										FreeNode->pParent->pRightChild=NULL;
-
+	if (FreeNode->pParent->pLeftChild==FreeNode)
+		FreeNode->pParent->pLeftChild=NULL;
+	else										
+		FreeNode->pParent->pRightChild=NULL;
 	freeNextHopSet(FreeNode->pNextHop);
 	FreeNode->pNextHop=NULL;
 	free(FreeNode);

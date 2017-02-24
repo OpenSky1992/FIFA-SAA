@@ -6,7 +6,6 @@ Rib::Rib(void)
 {
 	update=(UpdateRib*)malloc(sizeof(UpdateRib));
 	update->isLeaf=false;
-	update->outNumber=0;
 	update->inheritHop=DEFAULTHOP;
 	update->pLastRib=NULL;
 	CreateNewNode(m_pTrie);
@@ -14,6 +13,8 @@ Rib::Rib(void)
 
 Rib::~Rib(void)
 {
+	FreeSubTree(m_pTrie);
+	free(update);
 }
 
 void Rib::CreateNewNode(RibTrie* &pTrie)
@@ -118,11 +119,18 @@ unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 	return iEntryCount;
 }
 
+void Rib::Update(UpdatePara *para)
+{
+	if(UPDATE_ANNOUNCE==para->operate)
+		update->valid=updateAnnounce(para->nextHop,para->path);
+	else
+		update->valid=updateWithdraw(para->path);
+}
+
 bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 {
 	RibTrie *insertNode=m_pTrie;
 	int default_oldport=DEFAULTHOP;
-	int outDeep=0;
 
 	for (int i=0;i<(int)strlen(insert_C);i++)
 	{
@@ -134,7 +142,6 @@ bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 				CreateNewNode(pNewNode);
 				pNewNode->pParent=insertNode;
 				insertNode->pLeftChild=pNewNode;
-				outDeep++;
 			}
 			insertNode=insertNode->pLeftChild;
 		}
@@ -146,7 +153,6 @@ bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 				CreateNewNode(pNewNode);
 				pNewNode->pParent=insertNode;
 				insertNode->pRightChild=pNewNode;
-				outDeep++;
 			}
 			insertNode=insertNode->pRightChild;
 		}
@@ -156,60 +162,74 @@ bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 	}
 
 	update->inheritHop=default_oldport;
-	update->isLeaf=false;
-	if(outDeep>0)
-		update->isLeaf=true;
 	
 	if (insertNode->iNextHop==iNextHop)
 		return false;
 	if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
 	{
-		insertNode->iNextHop=iNextHop;
 		update->isLeaf=true;
 		update->pLastRib=NULL;//Leaf node don't need this parameter
 	}
 	else
+	{
+		update->isLeaf=false;
 		update->pLastRib=insertNode;
+		if(insertNode->iNextHop==EMPTYHOP)
+			update->isEmpty=true;
+		else
+			update->isEmpty=false;
+	}
+	insertNode->iNextHop=iNextHop;
 	return true;
 }
 
 bool Rib::updateWithdraw(char *insert_C)
 {
-	RibTrie *insertNode=m_pTrie;
+	RibTrie *lastVisit=m_pTrie;
 	int default_oldport=DEFAULTHOP;
 	for (int i=0;i<(int)strlen(insert_C);i++)
 	{
 		if ('0'==insert_C[i])
 		{
-			if (NULL==insertNode->pLeftChild)
+			if (NULL==lastVisit->pLeftChild)
 				return false;
-			insertNode=insertNode->pLeftChild;
+			lastVisit=lastVisit->pLeftChild;
 		}
 		else
 		{
-			if (NULL==insertNode->pRightChild)
+			if (NULL==lastVisit->pRightChild)
 				return false;
-			insertNode=insertNode->pRightChild;
+			lastVisit=lastVisit->pRightChild;
 		}
-		if (insertNode->pParent!=NULL)
-			if (insertNode->pParent->iNextHop!=0)
-				default_oldport=insertNode->pParent->iNextHop;
+		if (lastVisit->pParent!=NULL)
+			if (lastVisit->pParent->iNextHop!=0)
+				default_oldport=lastVisit->pParent->iNextHop;
 	}
 
 	update->inheritHop=default_oldport;
-	update->isLeaf=false;
 
-	if (EMPTYHOP==insertNode->iNextHop)//invalid delete operation
+	if (EMPTYHOP==lastVisit->iNextHop)//invalid delete operation
 		return false;
-	if (insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
+	if (lastVisit->pLeftChild==NULL&&lastVisit->pRightChild==NULL)
 	{
-		update->w_LeafOldHop=insertNode->iNextHop;
-		update->outNumber=withdrawLeafNode(insertNode);
 		update->isLeaf=true;
+		update->w_OldHop=lastVisit->iNextHop;
+		update->w_outNumber=withdrawLeafNode(lastVisit);
 		update->pLastRib=NULL;  //Leaf node don't need this parameter
 	}
 	else
-		update->pLastRib=insertNode;
+	{
+		update->isLeaf=false;
+		if(lastVisit->iNextHop==EMPTYHOP)
+			update->isEmpty=true;
+		else
+		{
+			update->w_OldHop=lastVisit->iNextHop;
+			update->isEmpty=false;
+			lastVisit->iNextHop=EMPTYHOP;
+		}
+		update->pLastRib=lastVisit;
+	}
 	return true;
 }
 
@@ -335,4 +355,17 @@ void Rib::AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNe
 		}
 	}
 	pTrie->iNextHop = iNextHop;
+}
+
+void Rib::FreeSubTree(RibTrie *freeNode)
+{
+	if(NULL==freeNode)
+		return ;
+	FreeSubTree(freeNode->pLeftChild);
+	FreeSubTree(freeNode->pRightChild);
+	if(freeNode->pParent->pLeftChild==freeNode)
+		freeNode->pParent->pLeftChild=NULL;
+	else
+		freeNode->pParent->pRightChild=NULL;
+	free(freeNode);
 }

@@ -1,55 +1,22 @@
 #pragma once
-
-#define		FIBLEN			sizeof(struct FibTrie)		//size of each node in FibTrie
-#define		NEXTHOPLEN		sizeof(struct NextHop)		//size of struct Nexthop
-#define     PREFIX_LEN		32							//the length of ip prefix
-
-#include "Rib.h"
-using namespace std;
-
-//The defination of linklist Nexhop
-struct NextHop{
-	NextHop*			pNext;				
-	int		iVal;							//the address of Nexthop£¬0 means empty
-};
-
-//node in FibTrie
-struct FibTrie
-{
-	FibTrie*	pParent;					//parent pointer
-	FibTrie*	pLeftChild;					//point to left child
-	FibTrie*	pRightChild;				//point to right child
-	int			iNewPort;					//new port
-	bool		intersection;				//record intersection or union
-	bool		is_NNC_area;				//for update,NCC: Nexthop set No Change
-	struct NextHop* pNextHop;				//Nexthop set
-};
-
-struct UpdatePara
-{
-	int nextHop;
-	char path[PREFIX_LEN];
-	char operate;
-	FibTrie *pLastFib;
-	FibTrie *a_insertNode;   //only for annouce leaf
-	NextHop *oldNHS;       //NextHopSet
-};
-
+#include "common.h"
 
 class Fib
 {
 public:
 	Fib(void);
 	~Fib(void);
-	void updateAnnounce(UpdatePara *para,UpdateRib *info);
-	void updateWithdraw(UpdatePara *para,UpdateRib *info);
+
 	void ConstructFromRib(RibTrie* pRibTrie);
 	void Compress();
+	void Update(UpdatePara *para,UpdateRib *info);
+
+	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
+	FibTrie* getFibRoot();
 
 private:
 	//Data fib trie
 	FibTrie* m_pTrie;	
-
 	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
@@ -62,14 +29,16 @@ private:
 	bool ifcontainFunc(int inheritHop,NextHop *ptmp);
 	void freeNextHopSet(NextHop *ptmp);
 	NextHop* CopyNextHopSet(NextHop *ptmp);
-	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
 	void NextHopMerge(FibTrie *pTrie);
 	int priority_select(int oldSelect,int oldInherit,NextHop *ptmp);
 
 	//I sperate a old version big function into those little function
 	void update_process(FibTrie *pLastFib,NextHop *oldNHS);
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
-	void LastVisitNode(UpdatePara *para,UpdateRib *info);
+	FibTrie* lastVisitAnnounce(char *travel,FibTrie* &insertNode,int &deep);
+	FibTrie* lastVisitWithdraw(char *travel);
+	void updateAnnounce(int intNextHop,char *travel,UpdateRib *info);
+	void updateWithdraw(char *travel,UpdateRib *info);
 	
 	
 	//update function

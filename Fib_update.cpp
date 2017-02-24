@@ -1,6 +1,5 @@
 #include "Fib.h"
 
-
 bool Fib::EqualNextHopSet(NextHop *pNextA,NextHop *pNextB)
 {
 	NextHop *pA=pNextA,*pB=pNextB;
@@ -27,16 +26,30 @@ bool Fib::EqualNextHopSet(NextHop *pNextA,NextHop *pNextB)
 	return true;
 }
 
-void Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
+FibTrie* Fib::lastVisitWithdraw(char *travelPath)
+{
+	FibTrie *pLastVisit=m_pTrie;
+	int travelLen=(int)strlen(travelPath);
+	for (int i=0;i<travelLen;i++)
+	{
+		if ('0'==travelPath[i])
+			pLastVisit=pLastVisit->pLeftChild;
+		else
+			pLastVisit=pLastVisit->pRightChild;
+	}
+	return pLastVisit;
+}
+
+FibTrie* Fib::lastVisitAnnounce(char *travelPath,FibTrie* &insertLeaf,int &deep)
 {
 	FibTrie *insertNode=m_pTrie;
 	FibTrie *pNTrie,*pCounterTrie;
 	FibTrie *pLastVisit=m_pTrie;
 	int outDeep=0;
 
-	for (int i=0;i<(int)strlen(para->path);i++)
+	for (int i=0;i<(int)strlen(travelPath);i++)
 	{
-		if ('0'==para->path[i])
+		if ('0'==travelPath[i])
 		{
 			if (NULL==insertNode->pLeftChild)
 			{//turn left, if left child is empty, create new node
@@ -75,13 +88,9 @@ void Fib::LastVisitNode(UpdatePara *para,UpdateRib *info)
 			insertNode=insertNode->pRightChild;
 		}
 	}
-	if(UPDATE_ANNOUNCE==para->operate)
-	{
-		info->outNumber=outDeep;
-		para->a_insertNode=insertNode;
-	}
-	para->pLastFib=pLastVisit;
-	para->oldNHS=CopyNextHopSet(pLastVisit->pNextHop);
+	deep=outDeep;
+	insertLeaf=insertNode;
+	return pLastVisit;
 }
 
 NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
@@ -106,18 +115,26 @@ NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 	return pCopyHead;
 }
 
-void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
+void Fib::Update(UpdatePara *para,UpdateRib *info)
 {
-	FibTrie *pLastFib;
-	
-	LastVisitNode(para,info);
-	pLastFib=para->pLastFib;
-	int intNextHop=para->nextHop;
+	if(!info->valid)
+		return ;
+	if(UPDATE_ANNOUNCE==para->operate)
+		updateAnnounce(para->nextHop,para->path,info);
+	else
+		updateWithdraw(para->path,info);
+}
+
+void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
+{
+	FibTrie *insertNode=NULL;
+	int outNumber=0;
+	FibTrie *pLastFib=lastVisitAnnounce(travelPath,insertNode,outNumber);
+	NextHop *oldNHS=CopyNextHopSet(pLastFib->pNextHop);
 
 	if(info->isLeaf)
 	{
-		FibTrie *insertNode=para->a_insertNode;
-		switch(info->outNumber)
+		switch(outNumber)
 		{
 		case 0:
 			if(intNextHop==pLastFib->pNextHop->iVal)
@@ -138,22 +155,15 @@ void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 			insertNode->pNextHop->iVal=intNextHop;
 			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
 			if(intNextHop!=pLastFib->pNextHop->iVal)
-				insertNode->iNewPort=intNextHop;
-			return;
+ 			return;
 		}
 	}
 	else
 	{
-		RibTrie *pLastRib;
-		pLastRib=info->pLastRib;
-		int inherit=info->inheritHop;
-
-		if(pLastRib->iNextHop==EMPTYHOP)
-			if(inherit==intNextHop)
-			{
-				pLastRib->iNextHop=intNextHop;
+		RibTrie *pLastRib=info->pLastRib;
+		if(info->isEmpty)
+			if(info->inheritHop==intNextHop)
 				return ;
-			}
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,intNextHop))
 		{
@@ -163,66 +173,60 @@ void Fib::updateAnnounce(UpdatePara *para,UpdateRib *info)
 		}
 		pLastRib->iNextHop=intNextHop;
 	}
-	update_process(para->pLastFib,para->oldNHS);
+	update_process(pLastFib,oldNHS);
 }
 
-void Fib::updateWithdraw(UpdatePara *para,UpdateRib *info)
+void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 {
-	FibTrie *pLastFib;
-	LastVisitNode(para,info);
-	pLastFib=para->pLastFib;
+	FibTrie *pLastFib=lastVisitWithdraw(travelPath);
+	NextHop *oldNHS=CopyNextHopSet(pLastFib->pNextHop);
 
 	if(info->isLeaf)
 	{
-		switch(info->outNumber)
+		switch(info->w_outNumber)
 		{
 		case 0:
-			if(info->inheritHop==info->w_LeafOldHop)
+			if(info->inheritHop==info->w_OldHop)
 				return ;
 			else
 				pLastFib->pNextHop->iVal=info->inheritHop;
 			break;
 		case 1:
-			if(info->inheritHop==info->w_LeafOldHop)
+			if(info->inheritHop==info->w_OldHop)
 			{
 				withdrawLeaf(pLastFib,1);
 				return ;
 			}
 			else
 			{
-				para->oldNHS=CopyNextHopSet(pLastFib->pParent->pNextHop);
+				oldNHS=CopyNextHopSet(pLastFib->pParent->pNextHop);
 				pLastFib=withdrawLeaf(pLastFib,1);
-				para->pLastFib=pLastFib;
+				pLastFib=pLastFib;
 				pLastFib->pNextHop->iVal=info->inheritHop;
 				freeNextHopSet(pLastFib->pNextHop->pNext);
 				pLastFib->pNextHop->pNext=NULL;
 			}
 			break;
 		default:
-			withdrawLeaf(pLastFib,info->outNumber);
+			withdrawLeaf(pLastFib,info->w_outNumber);
 			return ;
 		}
 	}
 	else
 	{
-		RibTrie *pLastRib;
-		pLastRib=info->pLastRib;
+		RibTrie *pLastRib=info->pLastRib;
 		int inherit=info->inheritHop;
 
-		if(pLastRib->iNextHop!=EMPTYHOP)
-			if(pLastRib->iNextHop==inherit)
-			{
-				pLastRib->iNextHop=EMPTYHOP;
+		if(!info->isEmpty)
+			if(info->w_OldHop==inherit)
 				return ;
-			}
-		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
 		{
 			pLastFib->is_NNC_area=false;
 			return ;
 		}
 	}
-	update_process(para->pLastFib,para->oldNHS);
+	update_process(pLastFib,oldNHS);
 }
 
 void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)

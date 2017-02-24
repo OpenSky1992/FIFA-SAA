@@ -1,10 +1,12 @@
+#pragma once
 #include "Fib.h"
 #include "Rib.h"
-#include<iostream>
+#include "TestCorrect.h"
+
 #include <windows.h>
 #include <time.h>
 #include <conio.h>
-#include<fstream>
+#include <fstream>
 
 using namespace std;
 
@@ -32,8 +34,8 @@ void getBugPrefix(string sFileName)
 
 	long			yearmonthday=0;		//an integer to record year, month, day
 	long			hourminsec=0;		//an integer to record hour, minute, second
-	ifstream fin(sFileName);
-	ofstream fout("update2_filter.txt");
+	ifstream fin(sFileName+".txt");
+	ofstream fout(sFileName+"_filter.txt");
 	if (!fin)
 	{
 		printf("!!!error!!!!  no file named:%s\n",sFileName);
@@ -58,9 +60,6 @@ void getBugPrefix(string sFileName)
 
 		parameter.nextHop=iNextHop;
 		parameter.operate=operate_type;
-		parameter.a_insertNode=NULL;
-		parameter.oldNHS=NULL;
-		parameter.pLastFib=NULL;
 
 
 		if(iLen>0)
@@ -106,7 +105,6 @@ void getBugPrefix(string sFileName)
 					fout<<" "<<iNextHop;
 				fout<<endl;
 			}
-
 		}
 		
 	}
@@ -115,7 +113,7 @@ void getBugPrefix(string sFileName)
 	fout.close();
 }
 
-unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
+unsigned int updateFromFile(string sFileName,TestModule *test)
 {
 	char			sPrefix[20];		//prefix from rib file
 	unsigned long	lPrefix;			//the value of Prefix
@@ -157,9 +155,7 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 		}
 		parameter.nextHop=iNextHop;
 		parameter.operate=operate_type;
-		parameter.a_insertNode=NULL;
-		parameter.oldNHS=NULL;
-		parameter.pLastFib=NULL;
+
 		int iStart=0;				//the end point of IP
 		int iEnd=0;					//the end point of IP
 		int iFieldIndex = 3;		
@@ -201,38 +197,24 @@ unsigned int updateFromFile(string sFileName,Rib *tRib,Fib *tFib)
 				else 
 					parameter.path[yi]='0';
 			}
+			test->updateParameter(&parameter);
+			//LARGE_INTEGER frequence,privious,privious1;
+			//if(!QueryPerformanceFrequency(&frequence))
+			//	return 0;
+			//QueryPerformanceCounter(&privious); 
 
-			LARGE_INTEGER frequence,privious,privious1;
-			if(!QueryPerformanceFrequency(&frequence))
-				return 0;
-			QueryPerformanceCounter(&privious); 
-			if(UPDATE_ANNOUNCE==operate_type)
-			{
-				if(tRib->updateAnnounce(iNextHop,parameter.path))
-				{
-					UpdateRib *llltemp=tRib->getUpdate();
-					tFib->updateAnnounce(&parameter,llltemp);
-				}
-			}
-			else
-			{
-				if(tRib->updateWithdraw(parameter.path))
-				{
-					UpdateRib *llltemp=tRib->getUpdate();
-					tFib->updateWithdraw(&parameter,llltemp);
-				}
-			}
-			QueryPerformanceCounter(&privious1);
-			updatetimeused+=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
-			//cout<<readlines<<" "<<sPrefix<<endl;
-			cout<<readlines<<endl;
+			//QueryPerformanceCounter(&privious1);
+			//updatetimeused=updatetimeused+privious1.QuadPart-privious.QuadPart;
+			//updatetimeused=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
+			cout<<readlines<<" "<<updatetimeused<<endl;
+			//cout<<readlines<<endl;
 		}
 	}
-	cout<<readlines<<":"<<updatetimeused<<endl;
+	//double updatetimeusedtime=updatetimeused/2.648437;
+	//cout<<readlines<<":"<<updatetimeused<<" "<<updatetimeusedtime<<endl;
 	fin.close();
 	return readlines;
 }
-
 
 int main()
 {
@@ -240,25 +222,29 @@ int main()
 	bool ipFormat=true;
 	bool getBugfile=false;
 
-	Rib tRib=Rib();
-	Fib tFib=Fib();
-
-	char *ribFile="rib.txt";
-	char *ribFileIP="rib2_ip.txt";
-	char *updatefile="updates2.txt";
+	string ribFile="rib.txt";
+	string ribFileIP="rib2_ip.txt";
+	string updatefile="updates2";
 	
 	if(!getBugfile)
 	{
+		Rib *tRib=new Rib();
+		Fib *tFib=new Fib();
+		TestModule *testCor=new TestCorrect(tRib,tFib);
+
 		if(ipFormat)
-			tRib.BuildRibFromFile(ribFile);
+			tRib->BuildRibFromFile(ribFile);
 		else
 		{
-			tRib.ConvertBinToIP(ribFile,ribFileIP);
-			tRib.BuildRibFromFile(ribFileIP);
+			tRib->ConvertBinToIP(ribFile,ribFileIP);
+			tRib->BuildRibFromFile(ribFileIP);
 		}
-		tFib.ConstructFromRib(tRib.getRibTrie());
-		tFib.Compress();
-		updateFromFile(updatefile,&tRib,&tFib);
+		tFib->ConstructFromRib(tRib->getRibTrie());
+		tFib->Compress();
+		string updateFileName=updatefile+".txt";
+		updateFromFile(updateFileName,testCor);
+		delete tRib;
+		delete tFib;
 		cin>>pause;
 	}
 	else
