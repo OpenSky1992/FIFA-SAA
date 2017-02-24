@@ -45,12 +45,16 @@ bool TestCorrect::isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 	}
 }
 
-bool TestCorrect::examineAlogrithm()
+void TestCorrect::examineAlogrithm()
 {
 	Fib *fibTotal=new Fib();
 	fibTotal->ConstructFromRib(pRibTrie->getRibTrie());
 	fibTotal->Compress();
+	//fibTotal->getFibRoot()->pNextHop->iVal=-2;
 	bool correct=isCorrect(fibTotal->getFibRoot(),pFibTrie->getFibRoot());
 	delete fibTotal;
-	return correct;
+	if(correct)
+		cout<<"algorithm is correct"<<endl;
+	else
+		cout<<"algorithm is wrong"<<endl;
 }

@@ -155,6 +155,7 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 			insertNode->pNextHop->iVal=intNextHop;
 			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
 			if(intNextHop!=pLastFib->pNextHop->iVal)
+				insertNode->iNewPort=intNextHop;
  			return;
 		}
 	}

@@ -362,10 +362,8 @@ void Rib::FreeSubTree(RibTrie *freeNode)
 	if(NULL==freeNode)
 		return ;
 	FreeSubTree(freeNode->pLeftChild);
+	freeNode->pLeftChild=NULL;
 	FreeSubTree(freeNode->pRightChild);
-	if(freeNode->pParent->pLeftChild==freeNode)
-		freeNode->pParent->pLeftChild=NULL;
-	else
-		freeNode->pParent->pRightChild=NULL;
+	freeNode->pRightChild=NULL;
 	free(freeNode);
 }

@@ -297,7 +297,7 @@ void Fib::Compress()
 {
 	if(m_pTrie->iNewPort==EMPTYHOP)
 		m_pTrie->iNewPort=m_pTrie->pNextHop->iVal=DEFAULTHOP;
-
+	
 	PassOneTwo(m_pTrie);
 	PassThree(m_pTrie,DEFAULTHOP-1);  //
 }
@@ -307,11 +307,9 @@ void Fib::FreeSubTree(FibTrie *FreeNode)
 	if (NULL==FreeNode)
 		return;
 	FreeSubTree(FreeNode->pLeftChild);
+	FreeNode->pLeftChild=NULL;
 	FreeSubTree(FreeNode->pRightChild);
-	if (FreeNode->pParent->pLeftChild==FreeNode)
-		FreeNode->pParent->pLeftChild=NULL;
-	else										
-		FreeNode->pParent->pRightChild=NULL;
+	FreeNode->pRightChild=NULL;
 	freeNextHopSet(FreeNode->pNextHop);
 	FreeNode->pNextHop=NULL;
 	free(FreeNode);

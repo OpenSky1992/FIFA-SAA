@@ -6,7 +6,7 @@ class TestCorrect:public TestModule
 public:
 	TestCorrect(Rib *pRib,Fib *pFib);
 	virtual void updateParameter(UpdatePara *para);
-	bool examineAlogrithm();
+	void examineAlogrithm();
 	~TestCorrect(void){};
 private:
 	bool isCorrect(FibTrie *pFibSrc,FibTrie *pTarget);

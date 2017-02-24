@@ -206,8 +206,8 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 			//QueryPerformanceCounter(&privious1);
 			//updatetimeused=updatetimeused+privious1.QuadPart-privious.QuadPart;
 			//updatetimeused=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
-			cout<<readlines<<" "<<updatetimeused<<endl;
-			//cout<<readlines<<endl;
+			//cout<<readlines<<" "<<updatetimeused<<endl;
+			cout<<readlines<<endl;
 		}
 	}
 	//double updatetimeusedtime=updatetimeused/2.648437;
@@ -230,7 +230,7 @@ int main()
 	{
 		Rib *tRib=new Rib();
 		Fib *tFib=new Fib();
-		TestModule *testCor=new TestCorrect(tRib,tFib);
+		TestCorrect *testCor=new TestCorrect(tRib,tFib);
 
 		if(ipFormat)
 			tRib->BuildRibFromFile(ribFile);
@@ -243,8 +243,11 @@ int main()
 		tFib->Compress();
 		string updateFileName=updatefile+".txt";
 		updateFromFile(updateFileName,testCor);
+		testCor->examineAlogrithm();
+
 		delete tRib;
 		delete tFib;
+		delete testCor;
 		cin>>pause;
 	}
 	else
