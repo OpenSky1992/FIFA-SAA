@@ -71,7 +71,7 @@ void getBugPrefix(string sFileName)
 				if ( sPrefix[i] == '.' ){
 					iEnd = i;
 					string strVal(sPrefix+iStart,iEnd-iStart);
-					lPrefix += atol(strVal.c_str()) << (8 * iFieldIndex); //向左移位到高位
+					lPrefix += atol(strVal.c_str()) << (8 * iFieldIndex); 
 					iFieldIndex--;
 					iStart = i+1;
 					i++;
@@ -114,7 +114,7 @@ void getBugPrefix(string sFileName)
 	fout.close();
 }
 
-unsigned int updateFromFile(string sFileName,TestModule *test)
+unsigned int updateFromFile(string sFileName,TestCorrect *test)
 {
 	char			sPrefix[20];		//prefix from rib file
 	unsigned long	lPrefix;			//the value of Prefix
@@ -169,7 +169,7 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 				if ( sPrefix[i] == '.' ){
 					iEnd = i;
 					string strVal(sPrefix+iStart,iEnd-iStart);
-					lPrefix += atol(strVal.c_str()) << (8 * iFieldIndex); //向左移位到高位
+					lPrefix += atol(strVal.c_str()) << (8 * iFieldIndex); 
 					iFieldIndex--;
 					iStart = i+1;
 					i++;
@@ -197,18 +197,18 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 					parameter.path[yi]='0';
 			}
 			test->updateParameter(&parameter);
-			//if(readlines%1000==0)
-			//{
-			//	if(!test->exammineOnebyOne())
-			//	{
-			//		cout<<readlines<<":wrong"<<endl;
-			//		return readlines;
-			//	}
-			//	else
-			//	{
-			//		cout<<readlines<<":correct"<<endl;	
-			//	}
-			//}
+			if(readlines%2000==0)
+			{
+				if(!test->exammineOnebyOne())
+				{
+					cout<<readlines<<":wrong"<<endl;
+					return readlines;
+				}
+				else
+				{
+					cout<<readlines<<":correct"<<endl;	
+				}
+			}
 			//cout<<readlines<<endl;
 		}
 	}

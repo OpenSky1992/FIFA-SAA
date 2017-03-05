@@ -10,7 +10,7 @@ public:
 	bool exammineOnebyOne();
 	~TestCorrect(void);
 private:
-
-	bool isCorrect(FibTrie *pFibSrc,FibTrie *pTarget);
+	bool forwardCorrect(RibTrie *pRib,int inheritR,FibTrie *pFib,int inheritF);
+	bool NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget);
 };
 

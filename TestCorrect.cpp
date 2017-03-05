@@ -16,8 +16,54 @@ void TestCorrect::updateParameter(UpdatePara *para)
 	pFibTrie->Update(para,pRibTrie->getUpdate());
 }
 
-bool TestCorrect::isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
+bool TestCorrect::forwardCorrect(RibTrie *pRib,int inheritRib,FibTrie *pFib,int inheritFib)
 {
+	//this function does not depend on nexthop set,this function only need information is that iNexPort in every FibTrie nodes
+	//if we use nexthop set to compare,this function will lose its effectiveness
+	int newInheritRib=inheritRib;
+	int newInheritFib=inheritFib;
+	if(pRib==NULL&&pFib==NULL)
+		return true;
+	else if(pRib==NULL&&pFib!=NULL)
+	{
+		if(pFib->iNewPort!=EMPTYHOP)
+			newInheritFib=pFib->iNewPort;
+		if(pFib->pLeftChild!=NULL||pFib->pRightChild!=NULL)
+			return false;
+		if(inheritRib==newInheritFib)
+			return true;
+		else
+			return false;
+	}
+	else if(pRib!=NULL&&pFib==NULL)
+		return false;
+	else
+	{
+		if(pFib->iNewPort!=EMPTYHOP)
+			newInheritFib=pFib->iNewPort;
+		if(pRib->iNextHop!=EMPTYHOP)
+			newInheritRib=pRib->iNextHop;
+		if(pRib->pLeftChild==NULL&&pRib->pRightChild==NULL)
+		{
+			if(pFib->pLeftChild!=NULL||pFib->pRightChild!=NULL)
+				return false;
+			if(newInheritRib==newInheritFib)
+				return true;
+			else
+				return false;
+		}
+		else
+		{
+			bool leftRes=forwardCorrect(pRib->pLeftChild,newInheritRib,pFib->pLeftChild,newInheritFib);
+			bool rightRes=forwardCorrect(pRib->pRightChild,newInheritRib,pFib->pRightChild,newInheritFib);
+			return leftRes&&rightRes;
+		}
+	}
+}
+
+bool TestCorrect::NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
+{
+	//check is_NNC_area,pNextHop,intersection
 	//pTarget is update one by one 
 	//pFibSrc is compressed Fib trie from pRib that complete total update
 	if(pTarget->is_NNC_area)
@@ -37,8 +83,8 @@ bool TestCorrect::isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 			bool is_continue=NHS_result&&inter_result;
 			if(!is_continue)
 				return false;
-			bool leftResult=isCorrect(pFibSrc->pLeftChild,pTarget->pLeftChild);
-			bool RightResult=isCorrect(pFibSrc->pRightChild,pTarget->pRightChild);
+			bool leftResult=NHS_isCorrect(pFibSrc->pLeftChild,pTarget->pLeftChild);
+			bool RightResult=NHS_isCorrect(pFibSrc->pRightChild,pTarget->pRightChild);
 			return leftResult&&RightResult;
 		}
 		else
@@ -54,7 +100,7 @@ bool TestCorrect::isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 bool TestCorrect::exammineOnebyOne()
 {
 	int fibPrefixNum=pFibTrie->getPrefixNum();
-	int fibNonRouNum=pFibTrie->getNonRouteNum();
+	int fibTotalNodeNum=pFibTrie->getTotalNodeNum();
 
 	Fib *fibTotal=new Fib();
 	fibTotal->ConstructFromRib(pRibTrie->getRibTrie());
@@ -62,47 +108,56 @@ bool TestCorrect::exammineOnebyOne()
 	
 	int once_fibPrefixNum=fibTotal->getPrefixNum();
 	int once_fibNonRouNum=fibTotal->getNonRouteNum();
+	int once_fibTotalNodeNum=fibTotal->getTotalNodeNum();
 	if(fibPrefixNum!=once_fibPrefixNum)
 	{
 		cout<<"fib prefix number:"<<fibPrefixNum<<endl;
 		cout<<"once compression fib prefix number:"<<once_fibPrefixNum<<endl;
 		return false;
 	}
-	if(fibNonRouNum!=once_fibNonRouNum)
+	if(fibTotalNodeNum!=once_fibTotalNodeNum)
 	{
-		cout<<"fib non-route prefix number:"<<fibNonRouNum<<endl;
-		cout<<"once compression fib non-route prefix number:"<<once_fibNonRouNum<<endl;
+		cout<<"fib total node number:"<<fibTotalNodeNum<<endl;
+		cout<<"once compression fib total node number:"<<once_fibTotalNodeNum<<endl;
 		return false;
 	}
-	bool correct=isCorrect(fibTotal->getFibRoot(),pFibTrie->getFibRoot());
+	bool NHS_correct=NHS_isCorrect(fibTotal->getFibTrie(),pFibTrie->getFibTrie());
+	bool forward_correct=forwardCorrect(pRibTrie->getRibTrie(),DEFAULTHOP,pFibTrie->getFibTrie(),DEFAULTHOP);
 	delete fibTotal;
-	if(correct)
-		return true;
-	else
-		return false;
+	return NHS_correct&&forward_correct;
 }
 
 void TestCorrect::examineAlogrithm()
 {
 	int ribPrefixNum=pRibTrie->getPrefixNum();
+
 	int fibPrefixNum=pFibTrie->getPrefixNum();
 	int fibNonRouNum=pFibTrie->getNonRouteNum();
+	int fibTotalNodeNum=pFibTrie->getTotalNodeNum();
 	cout<<"rib prefix number:"<<ribPrefixNum<<endl;
 	cout<<"fib prefix number:"<<fibPrefixNum<<endl;
 	cout<<"fib non-route prefix number:"<<fibNonRouNum<<endl;
+	cout<<"fib total node number:"<<fibTotalNodeNum<<endl;
 	Fib *fibTotal=new Fib();
 	fibTotal->ConstructFromRib(pRibTrie->getRibTrie());
 	fibTotal->Compress();
 	
 	int once_fibPrefixNum=fibTotal->getPrefixNum();
 	int once_fibNonRouNum=fibTotal->getNonRouteNum();
+	int once_fibTotalNodeNum=fibTotal->getTotalNodeNum();
 	cout<<"once compression fib prefix number:"<<once_fibPrefixNum<<endl;
 	cout<<"once compression fib non-route prefix number:"<<once_fibNonRouNum<<endl;
+	cout<<"once compression fib total node number:"<<once_fibTotalNodeNum<<endl;
 	
-	bool correct=isCorrect(fibTotal->getFibRoot(),pFibTrie->getFibRoot());
+	bool NHS_correct=NHS_isCorrect(fibTotal->getFibTrie(),pFibTrie->getFibTrie());
 	delete fibTotal;
-	if(correct)
-		cout<<"algorithm(NextHop set and is_NNC_area) is correct"<<endl;
+	if(NHS_correct)
+		cout<<"NextHop set,is_NNC_area,intersection are correct"<<endl;
 	else
-		cout<<"algorithm(NextHop set and is_NNC_area) is wrong"<<endl;
+		cout<<"NextHop set,is_NNC_area,intersection are wrong"<<endl;
+	bool forward_correct=forwardCorrect(pRibTrie->getRibTrie(),DEFAULTHOP,pFibTrie->getFibTrie(),DEFAULTHOP);
+	if(forward_correct)
+		cout<<"forward is correct"<<endl;
+	else
+		cout<<"forward is wrong"<<endl;
 }

@@ -29,7 +29,7 @@ Fib::~Fib(void)
 	delete m_pStatics;
 }
 
-FibTrie* Fib::getFibRoot()
+FibTrie* Fib::getFibTrie()
 {
 	return m_pTrie;
 }
@@ -43,6 +43,7 @@ void Fib::prefixNumTravel(FibTrie *pTrie)
 {
 	if(pTrie==NULL)
 		return ;
+	m_iTotalNodeNum++;
 	if(pTrie->iNewPort!=EMPTYHOP)
 	{
 		m_iPrefixNum++;
@@ -57,6 +58,7 @@ int Fib::getPrefixNum()
 {
 	m_iPrefixNum=0;
 	m_iNonRouteNum=0;
+	m_iTotalNodeNum=0;
 	prefixNumTravel(m_pTrie);
 	return m_iPrefixNum;
 }
@@ -64,6 +66,11 @@ int Fib::getPrefixNum()
 int Fib::getNonRouteNum()
 {
 	return m_iNonRouteNum;
+}
+
+int Fib::getTotalNodeNum()
+{
+	return m_iTotalNodeNum;
 }
 
 void Fib::ConstructFromRib(RibTrie* pRibTrie)
