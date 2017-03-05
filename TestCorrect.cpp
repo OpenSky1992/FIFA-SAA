@@ -6,6 +6,10 @@ TestCorrect::TestCorrect(Rib *pRib,Fib *pFib)
 	pFibTrie=pFib;
 }
 
+TestCorrect::~TestCorrect(void)
+{
+}
+
 void TestCorrect::updateParameter(UpdatePara *para)
 {
 	pRibTrie->Update(para);

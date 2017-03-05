@@ -1,9 +1,26 @@
+#pragma once 
 #include "Fib.h"
 
 
 Fib::Fib(void)
 {
 	CreateNewNode(m_pTrie);
+	m_pStatics=new UpdateStatistic();
+	m_pStatics->AnnounceNum=0;
+	m_pStatics->A_inherit=0;
+	m_pStatics->A_inValidNum=0;
+	m_pStatics->A_leaf_0=0;
+	m_pStatics->A_leaf_1=0;
+	m_pStatics->A_leaf_2=0;
+	m_pStatics->A_true_goDown=0;
+
+	m_pStatics->WithdrawNum=0;
+	m_pStatics->W_inherit=0;
+	m_pStatics->W_inValidNum=0;
+	m_pStatics->W_leaf_0=0;
+	m_pStatics->W_leaf_1=0;
+	m_pStatics->W_leaf_2=0;
+	m_pStatics->W_true_goDown=0;
 }
 
 Fib::~Fib(void)
@@ -14,6 +31,11 @@ Fib::~Fib(void)
 FibTrie* Fib::getFibRoot()
 {
 	return m_pTrie;
+}
+
+UpdateStatistic* Fib::getStatistics()
+{
+	return m_pStatics;
 }
 
 void Fib::ConstructFromRib(RibTrie* pRibTrie)

@@ -117,12 +117,26 @@ NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 
 void Fib::Update(UpdatePara *para,UpdateRib *info)
 {
-	if(!info->valid)
-		return ;
 	if(UPDATE_ANNOUNCE==para->operate)
+	{
+		m_pStatics->AnnounceNum++;
+		if(!info->valid)
+		{
+			m_pStatics->A_inValidNum++;
+			return ;
+		}
 		updateAnnounce(para->nextHop,para->path,info);
+	}
 	else
+	{
+		m_pStatics->WithdrawNum++;
+		if(!info->valid)
+		{
+			m_pStatics->W_inValidNum++;
+			return ;
+		}
 		updateWithdraw(para->path,info);
+	}
 }
 
 void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
@@ -138,7 +152,10 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 		{
 		case 0:
 			if(intNextHop==pLastFib->pNextHop->iVal)
+			{
+				m_pStatics->A_leaf_0++;
 				return ;
+			}
 			else
 				insertNode->pNextHop->iVal=intNextHop;
 			break;
@@ -146,7 +163,10 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 			insertNode->intersection=true;
 			insertNode->pNextHop->iVal=intNextHop;			//pLastFib->intersection=false;
 			if(intNextHop==pLastFib->pNextHop->iVal)
+			{
+				m_pStatics->A_leaf_1++;
 				return ;
+			}
 			else
 				PassOneTwo(pLastFib);//not only compute the nexthop set of the pLastFib,but also change the intersection(property) of the pLastFib 
 			break;
@@ -156,7 +176,8 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
 			if(intNextHop!=pLastFib->pNextHop->iVal)
 				insertNode->iNewPort=intNextHop;
- 			return;
+			m_pStatics->A_leaf_2++;
+			return;
 		}
 	}
 	else
@@ -164,12 +185,16 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 		RibTrie *pLastRib=info->pLastRib;
 		if(info->isEmpty)
 			if(info->inheritHop==intNextHop)
+			{
+				m_pStatics->A_inherit++;
 				return ;
+			}
 		pLastRib->iNextHop=EMPTYHOP;
 		if(updateGoDown_Merge(pLastRib,pLastFib,intNextHop))
 		{
 			pLastFib->is_NNC_area=false;
 			pLastRib->iNextHop=intNextHop;
+			m_pStatics->A_true_goDown++;
 			return ;
 		}
 		pLastRib->iNextHop=intNextHop;
@@ -188,7 +213,10 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 		{
 		case 0:
 			if(info->inheritHop==info->w_OldHop)
+			{
+				m_pStatics->W_leaf_0++;
 				return ;
+			}
 			else
 				pLastFib->pNextHop->iVal=info->inheritHop;
 			break;
@@ -196,6 +224,7 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 			if(info->inheritHop==info->w_OldHop)
 			{
 				withdrawLeaf(pLastFib,1);
+				m_pStatics->W_leaf_1++;
 				return ;
 			}
 			else
@@ -209,6 +238,7 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 			}
 			break;
 		default:
+			m_pStatics->W_leaf_2++;
 			withdrawLeaf(pLastFib,info->w_outNumber);
 			return ;
 		}
@@ -220,10 +250,14 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 
 		if(!info->isEmpty)
 			if(info->w_OldHop==inherit)
+			{
+				m_pStatics->W_inherit++;
 				return ;
+			}
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
 		{
 			pLastFib->is_NNC_area=false;
+			m_pStatics->W_true_goDown++;
 			return ;
 		}
 	}

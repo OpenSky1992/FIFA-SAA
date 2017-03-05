@@ -28,7 +28,7 @@ struct FibTrie
 	int					iNewPort;				//new port
 	bool				intersection;			//record intersection or union
 	bool				is_NNC_area;			//for update,NCC: Nexthop set No Change
-	struct NextHop*		pNextHop;				//Nexthop set
+	NextHop*			pNextHop;				//Nexthop set
 };
 
 struct RibTrie
@@ -57,3 +57,22 @@ struct UpdatePara
 	char				operate;				
 };
 
+struct UpdateStatistic
+{
+	int					AnnounceNum;
+	int					A_inValidNum;
+	int					A_leaf_0;
+	int					A_leaf_1;
+	int					A_leaf_2;
+	int					A_inherit;
+	int					A_true_goDown;
+	
+	int					WithdrawNum;
+	int					W_inValidNum;
+	int					W_leaf_0;
+	int					W_leaf_1;
+	int					W_leaf_2;
+	int					W_inherit;
+	int					W_true_goDown;
+
+};

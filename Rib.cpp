@@ -1,3 +1,4 @@
+#pragma once 
 #include "Rib.h"
 #include <iostream>
 #include <fstream>

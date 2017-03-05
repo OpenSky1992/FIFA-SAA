@@ -2,6 +2,7 @@
 #include "Fib.h"
 #include "Rib.h"
 #include "TestCorrect.h"
+#include "Performance.h"
 
 #include <windows.h>
 #include <time.h>
@@ -122,7 +123,6 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 
 	char			operate_type;
 	int				readlines=0;
-	long			updatetimeused=0;
 
 	long			yearmonthday=0;		//an integer to record year, month, day
 	long			hourminsec=0;		//an integer to record hour, minute, second
@@ -187,7 +187,6 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 					iPrefixLen=atoi(strVal.c_str());
 				}
 			}
-
 			memset(parameter.path,0,sizeof(parameter.path));
 		    //insert the current node into Trie tree
 			for (unsigned int yi=0; yi<iPrefixLen; yi++)
@@ -198,20 +197,11 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 					parameter.path[yi]='0';
 			}
 			test->updateParameter(&parameter);
-			//LARGE_INTEGER frequence,privious,privious1;
-			//if(!QueryPerformanceFrequency(&frequence))
-			//	return 0;
-			//QueryPerformanceCounter(&privious); 
-
-			//QueryPerformanceCounter(&privious1);
-			//updatetimeused=updatetimeused+privious1.QuadPart-privious.QuadPart;
-			//updatetimeused=1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
-			//cout<<readlines<<" "<<updatetimeused<<endl;
-			cout<<readlines<<endl;
+			//cout<<readlines<<endl;
 		}
 	}
 	//double updatetimeusedtime=updatetimeused/2.648437;
-	//cout<<readlines<<":"<<updatetimeused<<" "<<updatetimeusedtime<<endl;
+	cout<<readlines<<":"<<endl;
 	fin.close();
 	return readlines;
 }
@@ -230,7 +220,7 @@ int main()
 	{
 		Rib *tRib=new Rib();
 		Fib *tFib=new Fib();
-		TestCorrect *testCor=new TestCorrect(tRib,tFib);
+		Performance *testCor=new Performance(tRib,tFib);
 
 		if(ipFormat)
 			tRib->BuildRibFromFile(ribFile);
@@ -243,7 +233,9 @@ int main()
 		tFib->Compress();
 		string updateFileName=updatefile+".txt";
 		updateFromFile(updateFileName,testCor);
-		testCor->examineAlogrithm();
+		//testCor->examineAlogrithm();
+		testCor->AccUpdate();
+		testCor->printUseTime();
 
 		delete tRib;
 		delete tFib;
