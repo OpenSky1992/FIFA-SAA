@@ -31,6 +31,7 @@ struct FibTrie
 	NextHop*			pNextHop;				//Nexthop set
 };
 
+//node in RibTrie
 struct RibTrie
 {
 	RibTrie*			pParent;				//point to father node
@@ -39,6 +40,7 @@ struct RibTrie
 	int					iNextHop;				//Nexthop number
 };
 
+//return result from Rib
 struct UpdateRib
 {
 	bool				valid;					//if rib change
@@ -50,6 +52,7 @@ struct UpdateRib
 	RibTrie*			pLastRib;
 };
 
+//the information of update parameter
 struct UpdatePara
 {
 	int					nextHop;				//update parameter nexthop 
@@ -57,6 +60,7 @@ struct UpdatePara
 	char				operate;				
 };
 
+//the information of statistics update 
 struct UpdateStatistic
 {
 	int					AnnounceNum;

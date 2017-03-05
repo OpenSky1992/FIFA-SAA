@@ -26,6 +26,7 @@ Fib::Fib(void)
 Fib::~Fib(void)
 {
 	FreeSubTree(m_pTrie);
+	delete m_pStatics;
 }
 
 FibTrie* Fib::getFibRoot()
@@ -36,6 +37,33 @@ FibTrie* Fib::getFibRoot()
 UpdateStatistic* Fib::getStatistics()
 {
 	return m_pStatics;
+}
+
+void Fib::prefixNumTravel(FibTrie *pTrie)
+{
+	if(pTrie==NULL)
+		return ;
+	if(pTrie->iNewPort!=EMPTYHOP)
+	{
+		m_iPrefixNum++;
+		if(pTrie->iNewPort==DEFAULTHOP)
+			m_iNonRouteNum++;
+	}
+	prefixNumTravel(pTrie->pLeftChild);
+	prefixNumTravel(pTrie->pRightChild);
+}
+
+int Fib::getPrefixNum()
+{
+	m_iPrefixNum=0;
+	m_iNonRouteNum=0;
+	prefixNumTravel(m_pTrie);
+	return m_iPrefixNum;
+}
+
+int Fib::getNonRouteNum()
+{
+	return m_iNonRouteNum;
 }
 
 void Fib::ConstructFromRib(RibTrie* pRibTrie)

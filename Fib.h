@@ -14,11 +14,15 @@ public:
 	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
 	FibTrie* getFibRoot();
 	UpdateStatistic* getStatistics();
+	int getPrefixNum();
+	int getNonRouteNum();    //must call this function after call getPrefixNum function
 
 private:
 	//Data fib trie
 	FibTrie* m_pTrie;	
 	UpdateStatistic* m_pStatics;
+	int m_iPrefixNum;
+	int m_iNonRouteNum;
 	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
@@ -33,6 +37,7 @@ private:
 	NextHop* CopyNextHopSet(NextHop *ptmp);
 	void NextHopMerge(FibTrie *pTrie);
 	int priority_select(int oldSelect,int oldInherit,NextHop *ptmp);
+	void prefixNumTravel(FibTrie *pTrie);
 
 	//I sperate a old version big function into those little function
 	void update_process(FibTrie *pLastFib,NextHop *oldNHS);

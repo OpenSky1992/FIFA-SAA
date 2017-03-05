@@ -197,6 +197,18 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 					parameter.path[yi]='0';
 			}
 			test->updateParameter(&parameter);
+			//if(readlines%1000==0)
+			//{
+			//	if(!test->exammineOnebyOne())
+			//	{
+			//		cout<<readlines<<":wrong"<<endl;
+			//		return readlines;
+			//	}
+			//	else
+			//	{
+			//		cout<<readlines<<":correct"<<endl;	
+			//	}
+			//}
 			//cout<<readlines<<endl;
 		}
 	}
@@ -220,7 +232,7 @@ int main()
 	{
 		Rib *tRib=new Rib();
 		Fib *tFib=new Fib();
-		Performance *testCor=new Performance(tRib,tFib);
+		TestCorrect *testCor=new TestCorrect(tRib,tFib);
 
 		if(ipFormat)
 			tRib->BuildRibFromFile(ribFile);
@@ -233,9 +245,9 @@ int main()
 		tFib->Compress();
 		string updateFileName=updatefile+".txt";
 		updateFromFile(updateFileName,testCor);
-		//testCor->examineAlogrithm();
-		testCor->AccUpdate();
-		testCor->printUseTime();
+		testCor->examineAlogrithm();
+		//testCor->AccUpdate();
+		//testCor->printUseTime();
 
 		delete tRib;
 		delete tFib;

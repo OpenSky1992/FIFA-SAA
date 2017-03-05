@@ -42,6 +42,23 @@ UpdateRib* Rib::getUpdate()
 	return update;
 }
 
+int Rib::getPrefixNum()
+{
+	m_iPrefixNum=0;
+	prefixNumTravel(m_pTrie);
+	return m_iPrefixNum;
+}
+
+void Rib::prefixNumTravel(RibTrie *pTrie)
+{
+	if(pTrie==NULL)
+		return ;
+	if(pTrie->iNextHop!=EMPTYHOP)
+		m_iPrefixNum++;
+	prefixNumTravel(pTrie->pLeftChild);
+	prefixNumTravel(pTrie->pRightChild);
+}
+
 unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 {
 	char			sBinPrefix[32];		//PREFIX in binary format
@@ -249,20 +266,35 @@ int Rib::withdrawLeafNode(RibTrie *pLeaf)
 			//free(pTrie);
 			break;
 		}
-		if(temp->iNextHop!=EMPTYHOP)
-			breakwhile=2;
 		if(NULL!=temp->pLeftChild&&NULL!=temp->pRightChild)
+		{
+			if(temp->pLeftChild==pTrie)
+				temp->pLeftChild=NULL;
+			else
+				temp->pRightChild=NULL;
+			free(pTrie);
 			breakwhile=1;
-		if(temp->pLeftChild==pTrie)
-			temp->pLeftChild=NULL;
-		else
-			temp->pRightChild=NULL;
-		free(pTrie);
-		if(breakwhile>=1)
 			break;
-		pTrie=temp;
-		upLevel++;
-		temp=temp->pParent;
+		}
+		else if(temp->iNextHop!=EMPTYHOP)
+		{
+			if(temp->pLeftChild==pTrie)
+				temp->pLeftChild=NULL;
+			else
+				temp->pRightChild=NULL;
+			free(pTrie);
+			upLevel++;
+			breakwhile=2;
+			break;
+		}
+		else
+		{
+			pTrie=temp;
+			upLevel++;
+			temp=temp->pParent;
+		}
+		//this order is solid,first breakwhile=1,then breakwhile=2
+		//can not change the order,because two child is more import than it has label
 	}
 	return upLevel;
 }
