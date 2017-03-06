@@ -102,7 +102,7 @@ NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
 	pCopy=NULL;
 	while(pOld!=NULL)
 	{
-		 pNHop= (struct NextHop*)malloc(NEXTHOPLEN);
+		 pNHop= new NextHop();
 		 pNHop->iVal=pOld->iVal;
 		 pNHop->pNext=NULL;
 		 if(pCopy==NULL)

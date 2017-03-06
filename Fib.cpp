@@ -1,26 +1,15 @@
 #pragma once 
 #include "Fib.h"
 
+#include <windows.h>
+#include <time.h>
+
+
 
 Fib::Fib(void)
 {
 	CreateNewNode(m_pTrie);
 	m_pStatics=new UpdateStatistic();
-	m_pStatics->AnnounceNum=0;
-	m_pStatics->A_inherit=0;
-	m_pStatics->A_inValidNum=0;
-	m_pStatics->A_leaf_0=0;
-	m_pStatics->A_leaf_1=0;
-	m_pStatics->A_leaf_2=0;
-	m_pStatics->A_true_goDown=0;
-
-	m_pStatics->WithdrawNum=0;
-	m_pStatics->W_inherit=0;
-	m_pStatics->W_inValidNum=0;
-	m_pStatics->W_leaf_0=0;
-	m_pStatics->W_leaf_1=0;
-	m_pStatics->W_leaf_2=0;
-	m_pStatics->W_true_goDown=0;
 }
 
 Fib::~Fib(void)
@@ -121,8 +110,8 @@ void Fib::CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie)
 void Fib::CreateNewNode(FibTrie* &pTrie)
 {
 	
-	pTrie= (struct FibTrie*)malloc(FIBLEN);
-	struct NextHop* pNHop = (struct NextHop*)malloc(NEXTHOPLEN);
+	pTrie= new FibTrie();
+	NextHop* pNHop =new NextHop();
 
 	if (NULL==pNHop || NULL==pTrie)
 	{
@@ -212,6 +201,7 @@ void Fib::NextHopMerge(FibTrie *pTrie)
 
 	freeNextHopSet(pTrie->pNextHop->pNext);
 	pTrie->pNextHop->pNext=NULL;
+
 	//do the intersection 
 	NextHop* pLNextHop=pTrie->pLeftChild->pNextHop;
 	do{
@@ -227,7 +217,7 @@ void Fib::NextHopMerge(FibTrie *pTrie)
 				}
 				else{
 					//creat a linklist
-					pHop->pNext = (struct NextHop*)malloc(NEXTHOPLEN);
+					pHop->pNext =new NextHop();
 					if (NULL==pHop->pNext)
 					{
 						printf("error 3..., exit(0)\n");
@@ -259,7 +249,7 @@ void Fib::NextHopMerge(FibTrie *pTrie)
 				pHop = pHopHead;				//mark the start point of the set
 			}
 			else{
-				pHop->pNext = (struct NextHop*)malloc(NEXTHOPLEN);
+				pHop->pNext = new NextHop();
 				if (NULL==pHop->pNext)
 				{
 					printf("error 4..., exit(0)\n");
@@ -282,7 +272,7 @@ void Fib::NextHopMerge(FibTrie *pTrie)
 				pHop = pHopHead;				//mark the start point of the set
 			}
 			else{
-				pHop->pNext = (struct NextHop*)malloc(NEXTHOPLEN);
+				pHop->pNext =new NextHop();
 				if (NULL==pHop->pNext)
 				{
 					printf("error 5..., exit(0)\n");
@@ -323,7 +313,7 @@ void Fib::freeNextHopSet(NextHop *ptmp)
 	while(p!=NULL)
 	{
 		q=p->pNext;
-		free(p);
+		delete p;
 		p=q;
 	}
 }
@@ -355,8 +345,17 @@ void Fib::Compress()
 	if(m_pTrie->iNewPort==EMPTYHOP)
 		m_pTrie->iNewPort=m_pTrie->pNextHop->iVal=DEFAULTHOP;
 	
+
+	LARGE_INTEGER frequence,privious,privious1;
+	if(!QueryPerformanceFrequency(&frequence))	return ;
+	QueryPerformanceCounter(&privious); 
 	PassOneTwo(m_pTrie);
+	QueryPerformanceCounter(&privious1);
+	printf("pass one and two:\t%d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
+
 	PassThree(m_pTrie,DEFAULTHOP-1);  //
+	QueryPerformanceCounter(&privious);
+	printf("pass three:\t%d microsecond\n",1000000*(privious.QuadPart-privious1.QuadPart)/frequence.QuadPart);
 }
 
 void Fib::FreeSubTree(FibTrie *FreeNode)
@@ -369,6 +368,6 @@ void Fib::FreeSubTree(FibTrie *FreeNode)
 	FreeNode->pRightChild=NULL;
 	freeNextHopSet(FreeNode->pNextHop);
 	FreeNode->pNextHop=NULL;
-	free(FreeNode);
+	delete FreeNode;
 }
 

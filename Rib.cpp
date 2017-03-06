@@ -5,7 +5,7 @@
 
 Rib::Rib(void)
 {
-	update=(UpdateRib*)malloc(sizeof(UpdateRib));
+	update=new UpdateRib();
 	update->isLeaf=false;
 	update->inheritHop=DEFAULTHOP;
 	update->pLastRib=NULL;
@@ -15,12 +15,12 @@ Rib::Rib(void)
 Rib::~Rib(void)
 {
 	FreeSubTree(m_pTrie);
-	free(update);
+	delete update;
 }
 
 void Rib::CreateNewNode(RibTrie* &pTrie)
 {
-	pTrie=(struct RibTrie*)malloc(RIBLEN);
+	pTrie=new RibTrie();
 	if (NULL==m_pTrie)
 	{
 		printf("error 10..., exit(0)\n");
@@ -263,7 +263,7 @@ int Rib::withdrawLeafNode(RibTrie *pLeaf)
 		if(temp==NULL)
 		{
 			breakwhile=3;
-			//free(pTrie);
+			//delete pTrie;
 			break;
 		}
 		if(NULL!=temp->pLeftChild&&NULL!=temp->pRightChild)
@@ -272,7 +272,7 @@ int Rib::withdrawLeafNode(RibTrie *pLeaf)
 				temp->pLeftChild=NULL;
 			else
 				temp->pRightChild=NULL;
-			free(pTrie);
+			delete pTrie;
 			breakwhile=1;
 			break;
 		}
@@ -282,7 +282,7 @@ int Rib::withdrawLeafNode(RibTrie *pLeaf)
 				temp->pLeftChild=NULL;
 			else
 				temp->pRightChild=NULL;
-			free(pTrie);
+			delete pTrie;
 			upLevel++;
 			breakwhile=2;
 			break;

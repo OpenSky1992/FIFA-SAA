@@ -114,7 +114,7 @@ void getBugPrefix(string sFileName)
 	fout.close();
 }
 
-unsigned int updateFromFile(string sFileName,TestCorrect *test)
+unsigned int updateFromFile(string sFileName,TestModule *test)
 {
 	char			sPrefix[20];		//prefix from rib file
 	unsigned long	lPrefix;			//the value of Prefix
@@ -197,7 +197,8 @@ unsigned int updateFromFile(string sFileName,TestCorrect *test)
 					parameter.path[yi]='0';
 			}
 			test->updateParameter(&parameter);
-			if(readlines%2000==0)
+
+			/*if(readlines%2000==0)
 			{
 				if(!test->exammineOnebyOne())
 				{
@@ -208,7 +209,7 @@ unsigned int updateFromFile(string sFileName,TestCorrect *test)
 				{
 					cout<<readlines<<":correct"<<endl;	
 				}
-			}
+			}*/
 			//cout<<readlines<<endl;
 		}
 	}
@@ -232,22 +233,48 @@ int main()
 	{
 		Rib *tRib=new Rib();
 		Fib *tFib=new Fib();
-		TestCorrect *testCor=new TestCorrect(tRib,tFib);
+		Performance *testCor=new Performance(tRib,tFib);
+
+
+		LARGE_INTEGER frequence,privious,privious1;
+		if(!QueryPerformanceFrequency(&frequence))return 0;
 
 		if(ipFormat)
+		{
+			cout<<"read from file:"<<endl;
+			QueryPerformanceCounter(&privious); 
 			tRib->BuildRibFromFile(ribFile);
+			QueryPerformanceCounter(&privious1);
+			printf("read from file time:\t%d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
+		}
 		else
 		{
 			tRib->ConvertBinToIP(ribFile,ribFileIP);
 			tRib->BuildRibFromFile(ribFileIP);
 		}
+		cout<<"construct from rib:"<<endl;
 		tFib->ConstructFromRib(tRib->getRibTrie());
+
+
+		//QueryPerformanceCounter(&privious); 
 		tFib->Compress();
+		/*QueryPerformanceCounter(&privious1);
+		printf("Compress Time Consumption:\t%d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
+		int prefixNum=tFib->getPrefixNum();
+		int totalNodeNum=tFib->getTotalNodeNum();
+		int non_routeNum=tFib->getNonRouteNum();
+		cout<<"prefix number:"<<prefixNum<<endl;
+		cout<<"total number:"<<totalNodeNum<<endl;
+		cout<<"non route prefix number:"<<non_routeNum<<endl;*/
+		
+
 		string updateFileName=updatefile+".txt";
 		updateFromFile(updateFileName,testCor);
-		testCor->examineAlogrithm();
-		//testCor->AccUpdate();
-		//testCor->printUseTime();
+		//testCor->examineAlogrithm();
+		testCor->AccUpdate();
+		testCor->printUseTime();
+		cout<<endl;
+		tFib->getStatistics()->printInfor();
 
 		delete tRib;
 		delete tFib;

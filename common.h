@@ -1,8 +1,5 @@
 #pragma once
 
-#define		FIBLEN				sizeof(struct FibTrie)		//size of each node in FibTrie
-#define		NEXTHOPLEN			sizeof(struct NextHop)		//size of struct Nexthop
-#define		RIBLEN				sizeof(struct RibTrie)		//size of the node in Trie
 #define		HIGHTBIT			2147483648					//Binary: 10000000000000000000000000000000
 #define		EMPTYHOP			0							//empty next hop is 0
 #define		DEFAULTHOP			-1                          //default hop is -1
@@ -61,22 +58,25 @@ struct UpdatePara
 };
 
 //the information of statistics update 
-struct UpdateStatistic
+class UpdateStatistic
 {
-	int					AnnounceNum;
-	int					A_inValidNum;
-	int					A_leaf_0;
-	int					A_leaf_1;
-	int					A_leaf_2;
-	int					A_inherit;
-	int					A_true_goDown;
-	
-	int					WithdrawNum;
-	int					W_inValidNum;
-	int					W_leaf_0;
-	int					W_leaf_1;
-	int					W_leaf_2;
-	int					W_inherit;
-	int					W_true_goDown;
+public:
+	UpdateStatistic();
+	void printInfor();
 
+	int		AnnounceNum;
+	int		A_inValidNum;
+	int		A_leaf_0;
+	int		A_leaf_1;
+	int		A_leaf_2;
+	int		A_inherit;
+	int		A_true_goDown;
+	
+	int		WithdrawNum;
+	int		W_inValidNum;
+	int		W_leaf_0;
+	int		W_leaf_1;
+	int		W_leaf_2;
+	int		W_inherit;
+	int		W_true_goDown;
 };
