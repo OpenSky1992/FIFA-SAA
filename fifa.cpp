@@ -214,7 +214,7 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 		}
 	}
 	//double updatetimeusedtime=updatetimeused/2.648437;
-	cout<<readlines<<":"<<endl;
+	cout<<"update number:"<<readlines<<endl;
 	fin.close();
 	return readlines;
 }

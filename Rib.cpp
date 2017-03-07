@@ -6,9 +6,9 @@
 Rib::Rib(void)
 {
 	update=new UpdateRib();
-	update->isLeaf=false;
-	update->inheritHop=DEFAULTHOP;
-	update->pLastRib=NULL;
+	//update->isLeaf=false;
+	//update->inheritHop=DEFAULTHOP;
+	//update->pLastRib=NULL;
 	CreateNewNode(m_pTrie);
 }
 

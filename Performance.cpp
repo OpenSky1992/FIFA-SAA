@@ -19,7 +19,7 @@ Performance::~Performance(void)
 
 void Performance::printUseTime()
 {
-	cout<<"time:"<<updateTimeUsed<<endl;
+	cout<<"totoal update time:"<<updateTimeUsed<<endl;
 }
 
 

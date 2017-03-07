@@ -38,8 +38,9 @@ struct RibTrie
 };
 
 //return result from Rib
-struct UpdateRib
+class UpdateRib
 {
+public:
 	bool				valid;					//if rib change
 	bool				isLeaf;					//is leaf node
 	bool				isEmpty;				//is empty node
