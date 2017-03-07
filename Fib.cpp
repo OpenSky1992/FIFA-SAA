@@ -9,13 +9,15 @@
 Fib::Fib(void)
 {
 	CreateNewNode(m_pTrie);
-	m_pStatics=new UpdateStatistic();
+	m_pUpdateStat=new UpdateStatistic();
+	m_pFibTrieStat=new FibTrieStatistic();
 }
 
 Fib::~Fib(void)
 {
 	FreeSubTree(m_pTrie);
-	delete m_pStatics;
+	delete m_pUpdateStat;
+	delete m_pFibTrieStat;
 }
 
 FibTrie* Fib::getFibTrie()
@@ -23,43 +25,37 @@ FibTrie* Fib::getFibTrie()
 	return m_pTrie;
 }
 
-UpdateStatistic* Fib::getStatistics()
+UpdateStatistic* Fib::getUpdateStatistics()
 {
-	return m_pStatics;
+	return m_pUpdateStat;
 }
 
 void Fib::prefixNumTravel(FibTrie *pTrie)
 {
 	if(pTrie==NULL)
 		return ;
-	m_iTotalNodeNum++;
+	m_pFibTrieStat->totalNodeNum++;
 	if(pTrie->iNewPort!=EMPTYHOP)
 	{
-		m_iPrefixNum++;
+		m_pFibTrieStat->prefixNum++;
 		if(pTrie->iNewPort==DEFAULTHOP)
-			m_iNonRouteNum++;
+			m_pFibTrieStat->nonRouteNum++;
+	}
+	NextHop *ptmp=pTrie->pNextHop;
+	while(ptmp!=NULL)
+	{
+		m_pFibTrieStat->totalNextHopNum++;
+		ptmp=ptmp->pNext;
 	}
 	prefixNumTravel(pTrie->pLeftChild);
 	prefixNumTravel(pTrie->pRightChild);
 }
 
-int Fib::getPrefixNum()
+FibTrieStatistic* Fib::getFibTrieStatistic()
 {
-	m_iPrefixNum=0;
-	m_iNonRouteNum=0;
-	m_iTotalNodeNum=0;
+	m_pFibTrieStat->reset();
 	prefixNumTravel(m_pTrie);
-	return m_iPrefixNum;
-}
-
-int Fib::getNonRouteNum()
-{
-	return m_iNonRouteNum;
-}
-
-int Fib::getTotalNodeNum()
-{
-	return m_iTotalNodeNum;
+	return m_pFibTrieStat;
 }
 
 void Fib::ConstructFromRib(RibTrie* pRibTrie)
@@ -351,11 +347,11 @@ void Fib::Compress()
 	QueryPerformanceCounter(&privious); 
 	PassOneTwo(m_pTrie);
 	QueryPerformanceCounter(&privious1);
-	printf("pass one and two:\t%d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
+	printf("pass one and two:             %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
 
 	PassThree(m_pTrie,DEFAULTHOP-1);  //
 	QueryPerformanceCounter(&privious);
-	printf("pass three:\t%d microsecond\n",1000000*(privious.QuadPart-privious1.QuadPart)/frequence.QuadPart);
+	printf("pass three:                   %d microsecond\n",1000000*(privious.QuadPart-privious1.QuadPart)/frequence.QuadPart);
 }
 
 void Fib::FreeSubTree(FibTrie *FreeNode)

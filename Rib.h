@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+#include "AllNextHop.h"
 using namespace std;
 
 class Rib
@@ -13,13 +14,14 @@ public:
 
 	RibTrie* getRibTrie();
 	UpdateRib* getUpdate();
-	int getPrefixNum();
+	RibTrieStatistic* getRibTrieStatistic();
 
 private:
 	RibTrie* m_pTrie;				//RibTrie
-	UpdateRib* update;
-	int m_iPrefixNum;
-
+	UpdateRib* m_pUpdate;
+	RibTrieStatistic* m_pRibTrieStat;
+	AllNextHop* m_pAllNHS;
+	
 	
 	void FreeSubTree(RibTrie *pTrie);
 	bool updateAnnounce(int iNextHop,char *insert_C);

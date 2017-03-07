@@ -13,18 +13,14 @@ public:
 
 	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
 	FibTrie* getFibTrie();
-	UpdateStatistic* getStatistics();
-	int getPrefixNum();
-	int getNonRouteNum();    //must call this function after call getPrefixNum function
-	int getTotalNodeNum();   //must call this function after call getPrefixNum function
+	UpdateStatistic* getUpdateStatistics();
+	FibTrieStatistic* getFibTrieStatistic();
 
 private:
 	//Data fib trie
 	FibTrie* m_pTrie;	
-	UpdateStatistic* m_pStatics;
-	int m_iPrefixNum;
-	int m_iNonRouteNum;
-	int m_iTotalNodeNum;
+	UpdateStatistic* m_pUpdateStat;
+	FibTrieStatistic* m_pFibTrieStat;
 	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing

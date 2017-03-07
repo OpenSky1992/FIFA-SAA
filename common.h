@@ -37,6 +37,16 @@ struct RibTrie
 	int					iNextHop;				//Nexthop number
 };
 
+
+//the information of update parameter
+struct UpdatePara
+{
+	int					nextHop;				//update parameter nexthop 
+	char				path[PREFIX_LEN];		//update para
+	char				operate;				
+};
+
+
 //return result from Rib
 class UpdateRib
 {
@@ -50,20 +60,20 @@ public:
 	RibTrie*			pLastRib;
 };
 
-//the information of update parameter
-struct UpdatePara
+class StatisticModule
 {
-	int					nextHop;				//update parameter nexthop 
-	char				path[PREFIX_LEN];		//update para
-	char				operate;				
+public:
+	virtual void reset()=0;
+	virtual void printInfor()=0;
 };
 
 //the information of statistics update 
-class UpdateStatistic
+class UpdateStatistic:public StatisticModule
 {
 public:
 	UpdateStatistic();
-	void printInfor();
+	virtual void reset();
+	virtual void printInfor();
 
 	int		AnnounceNum;
 	int		A_inValidNum;
@@ -80,4 +90,27 @@ public:
 	int		W_leaf_2;
 	int		W_inherit;
 	int		W_true_goDown;
+};
+
+class RibTrieStatistic:public StatisticModule
+{
+public:
+	RibTrieStatistic();
+	virtual void reset();
+	virtual void printInfor();
+	int		prefixNum;			//prefix number
+	int		totalNodeNum;		//total Node number
+	int		diffNextHopNum;		//different Next hop number
+};
+
+class FibTrieStatistic:public StatisticModule
+{
+public:
+	FibTrieStatistic();
+	virtual void reset();
+	virtual void printInfor();
+	int		prefixNum;			//prefix number
+	int		totalNodeNum;		//total Node number
+	int		nonRouteNum;		//non-route prefix number
+	int		totalNextHopNum;    //next hop number count
 };

@@ -99,16 +99,17 @@ bool TestCorrect::NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 
 bool TestCorrect::exammineOnebyOne()
 {
-	int fibPrefixNum=pFibTrie->getPrefixNum();
-	int fibTotalNodeNum=pFibTrie->getTotalNodeNum();
+	FibTrieStatistic *pFTS=pFibTrie->getFibTrieStatistic();
+	int fibPrefixNum=pFTS->prefixNum;
+	int fibTotalNodeNum=pFTS->totalNodeNum;
 
 	Fib *fibTotal=new Fib();
 	fibTotal->ConstructFromRib(pRibTrie->getRibTrie());
 	fibTotal->Compress();
 	
-	int once_fibPrefixNum=fibTotal->getPrefixNum();
-	int once_fibNonRouNum=fibTotal->getNonRouteNum();
-	int once_fibTotalNodeNum=fibTotal->getTotalNodeNum();
+	pFTS=fibTotal->getFibTrieStatistic();
+	int once_fibPrefixNum=pFTS->prefixNum;
+	int once_fibTotalNodeNum=pFTS->totalNodeNum;
 	if(fibPrefixNum!=once_fibPrefixNum)
 	{
 		cout<<"fib prefix number:"<<fibPrefixNum<<endl;
@@ -129,25 +130,14 @@ bool TestCorrect::exammineOnebyOne()
 
 void TestCorrect::examineAlogrithm()
 {
-	int ribPrefixNum=pRibTrie->getPrefixNum();
+	cout<<"compressing one by one:"<<endl;
+	pFibTrie->getFibTrieStatistic()->printInfor();
 
-	int fibPrefixNum=pFibTrie->getPrefixNum();
-	int fibNonRouNum=pFibTrie->getNonRouteNum();
-	int fibTotalNodeNum=pFibTrie->getTotalNodeNum();
-	cout<<"rib prefix number:"<<ribPrefixNum<<endl;
-	cout<<"fib prefix number:"<<fibPrefixNum<<endl;
-	cout<<"fib non-route prefix number:"<<fibNonRouNum<<endl;
-	cout<<"fib total node number:"<<fibTotalNodeNum<<endl;
 	Fib *fibTotal=new Fib();
 	fibTotal->ConstructFromRib(pRibTrie->getRibTrie());
 	fibTotal->Compress();
-	
-	int once_fibPrefixNum=fibTotal->getPrefixNum();
-	int once_fibNonRouNum=fibTotal->getNonRouteNum();
-	int once_fibTotalNodeNum=fibTotal->getTotalNodeNum();
-	cout<<"once compression fib prefix number:"<<once_fibPrefixNum<<endl;
-	cout<<"once compression fib non-route prefix number:"<<once_fibNonRouNum<<endl;
-	cout<<"once compression fib total node number:"<<once_fibTotalNodeNum<<endl;
+	cout<<"compression one time:"<<endl<<endl;
+	fibTotal->getFibTrieStatistic()->printInfor();
 	
 	bool NHS_correct=NHS_isCorrect(fibTotal->getFibTrie(),pFibTrie->getFibTrie());
 	delete fibTotal;

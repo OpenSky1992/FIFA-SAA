@@ -5,17 +5,18 @@
 
 Rib::Rib(void)
 {
-	update=new UpdateRib();
-	//update->isLeaf=false;
-	//update->inheritHop=DEFAULTHOP;
-	//update->pLastRib=NULL;
+	m_pUpdate=new UpdateRib();
+	m_pRibTrieStat=new RibTrieStatistic();
+	m_pAllNHS=new AllNextHop();
 	CreateNewNode(m_pTrie);
 }
 
 Rib::~Rib(void)
 {
 	FreeSubTree(m_pTrie);
-	delete update;
+	delete m_pUpdate;
+	delete m_pRibTrieStat;
+	delete m_pAllNHS;
 }
 
 void Rib::CreateNewNode(RibTrie* &pTrie)
@@ -39,22 +40,28 @@ RibTrie* Rib::getRibTrie()
 
 UpdateRib* Rib::getUpdate()
 {
-	return update;
+	return m_pUpdate;
 }
 
-int Rib::getPrefixNum()
+RibTrieStatistic* Rib::getRibTrieStatistic()
 {
-	m_iPrefixNum=0;
+	m_pRibTrieStat->reset();
 	prefixNumTravel(m_pTrie);
-	return m_iPrefixNum;
+	m_pRibTrieStat->diffNextHopNum=m_pAllNHS->getSizeOfNHS();
+	return m_pRibTrieStat;
 }
 
 void Rib::prefixNumTravel(RibTrie *pTrie)
 {
 	if(pTrie==NULL)
 		return ;
+	m_pRibTrieStat->totalNodeNum++;
 	if(pTrie->iNextHop!=EMPTYHOP)
-		m_iPrefixNum++;
+	{
+		m_pRibTrieStat->prefixNum++;
+		//m_pAllNHS->addNextHop(pTrie->iNextHop);
+		
+	}
 	prefixNumTravel(pTrie->pLeftChild);
 	prefixNumTravel(pTrie->pRightChild);
 }
@@ -140,9 +147,9 @@ unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
 void Rib::Update(UpdatePara *para)
 {
 	if(UPDATE_ANNOUNCE==para->operate)
-		update->valid=updateAnnounce(para->nextHop,para->path);
+		m_pUpdate->valid=updateAnnounce(para->nextHop,para->path);
 	else
-		update->valid=updateWithdraw(para->path);
+		m_pUpdate->valid=updateWithdraw(para->path);
 }
 
 bool Rib::updateAnnounce(int iNextHop,char *insert_C)
@@ -179,23 +186,23 @@ bool Rib::updateAnnounce(int iNextHop,char *insert_C)
 				default_oldport=insertNode->pParent->iNextHop;
 	}
 
-	update->inheritHop=default_oldport;
+	m_pUpdate->inheritHop=default_oldport;
 	
 	if (insertNode->iNextHop==iNextHop)
 		return false;
 	if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
 	{
-		update->isLeaf=true;
-		update->pLastRib=NULL;//Leaf node don't need this parameter
+		m_pUpdate->isLeaf=true;
+		m_pUpdate->pLastRib=NULL;//Leaf node don't need this parameter
 	}
 	else
 	{
-		update->isLeaf=false;
-		update->pLastRib=insertNode;
+		m_pUpdate->isLeaf=false;
+		m_pUpdate->pLastRib=insertNode;
 		if(insertNode->iNextHop==EMPTYHOP)
-			update->isEmpty=true;
+			m_pUpdate->isEmpty=true;
 		else
-			update->isEmpty=false;
+			m_pUpdate->isEmpty=false;
 	}
 	insertNode->iNextHop=iNextHop;
 	return true;
@@ -224,29 +231,29 @@ bool Rib::updateWithdraw(char *insert_C)
 				default_oldport=lastVisit->pParent->iNextHop;
 	}
 
-	update->inheritHop=default_oldport;
+	m_pUpdate->inheritHop=default_oldport;
 
 	if (EMPTYHOP==lastVisit->iNextHop)//invalid delete operation
 		return false;
 	if (lastVisit->pLeftChild==NULL&&lastVisit->pRightChild==NULL)
 	{
-		update->isLeaf=true;
-		update->w_OldHop=lastVisit->iNextHop;
-		update->w_outNumber=withdrawLeafNode(lastVisit);
-		update->pLastRib=NULL;  //Leaf node don't need this parameter
+		m_pUpdate->isLeaf=true;
+		m_pUpdate->w_OldHop=lastVisit->iNextHop;
+		m_pUpdate->w_outNumber=withdrawLeafNode(lastVisit);
+		m_pUpdate->pLastRib=NULL;  //Leaf node don't need this parameter
 	}
 	else
 	{
-		update->isLeaf=false;
+		m_pUpdate->isLeaf=false;
 		if(lastVisit->iNextHop==EMPTYHOP)
-			update->isEmpty=true;
+			m_pUpdate->isEmpty=true;
 		else
 		{
-			update->w_OldHop=lastVisit->iNextHop;
-			update->isEmpty=false;
+			m_pUpdate->w_OldHop=lastVisit->iNextHop;
+			m_pUpdate->isEmpty=false;
 			lastVisit->iNextHop=EMPTYHOP;
 		}
-		update->pLastRib=lastVisit;
+		m_pUpdate->pLastRib=lastVisit;
 	}
 	return true;
 }

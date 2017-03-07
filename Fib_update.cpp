@@ -119,20 +119,20 @@ void Fib::Update(UpdatePara *para,UpdateRib *info)
 {
 	if(UPDATE_ANNOUNCE==para->operate)
 	{
-		m_pStatics->AnnounceNum++;
+		m_pUpdateStat->AnnounceNum++;
 		if(!info->valid)
 		{
-			m_pStatics->A_inValidNum++;
+			m_pUpdateStat->A_inValidNum++;
 			return ;
 		}
 		updateAnnounce(para->nextHop,para->path,info);
 	}
 	else
 	{
-		m_pStatics->WithdrawNum++;
+		m_pUpdateStat->WithdrawNum++;
 		if(!info->valid)
 		{
-			m_pStatics->W_inValidNum++;
+			m_pUpdateStat->W_inValidNum++;
 			return ;
 		}
 		updateWithdraw(para->path,info);
@@ -153,7 +153,7 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 		case 0:
 			if(intNextHop==pLastFib->pNextHop->iVal)
 			{
-				m_pStatics->A_leaf_0++;
+				m_pUpdateStat->A_leaf_0++;
 				return ;
 			}
 			else
@@ -164,7 +164,7 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 			insertNode->pNextHop->iVal=intNextHop;			//pLastFib->intersection=false;
 			if(intNextHop==pLastFib->pNextHop->iVal)
 			{
-				m_pStatics->A_leaf_1++;
+				m_pUpdateStat->A_leaf_1++;
 				return ;
 			}
 			else
@@ -176,7 +176,7 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
 			if(intNextHop!=pLastFib->pNextHop->iVal)
 				insertNode->iNewPort=intNextHop;
-			m_pStatics->A_leaf_2++;
+			m_pUpdateStat->A_leaf_2++;
 			return;
 		}
 	}
@@ -186,7 +186,7 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 		if(info->isEmpty)
 			if(info->inheritHop==intNextHop)
 			{
-				m_pStatics->A_inherit++;
+				m_pUpdateStat->A_inherit++;
 				return ;
 			}
 		pLastRib->iNextHop=EMPTYHOP;
@@ -194,7 +194,7 @@ void Fib::updateAnnounce(int intNextHop,char *travelPath,UpdateRib *info)
 		{
 			pLastFib->is_NNC_area=false;
 			pLastRib->iNextHop=intNextHop;
-			m_pStatics->A_true_goDown++;
+			m_pUpdateStat->A_true_goDown++;
 			return ;
 		}
 		pLastRib->iNextHop=intNextHop;
@@ -214,7 +214,7 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 		case 0:
 			if(info->inheritHop==info->w_OldHop)
 			{
-				m_pStatics->W_leaf_0++;
+				m_pUpdateStat->W_leaf_0++;
 				return ;
 			}
 			else
@@ -224,7 +224,7 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 			if(info->inheritHop==info->w_OldHop)
 			{
 				withdrawLeaf(pLastFib,1);
-				m_pStatics->W_leaf_1++;
+				m_pUpdateStat->W_leaf_1++;
 				return ;
 			}
 			else
@@ -238,7 +238,7 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 			}
 			break;
 		default:
-			m_pStatics->W_leaf_2++;
+			m_pUpdateStat->W_leaf_2++;
 			withdrawLeaf(pLastFib,info->w_outNumber);
 			return ;
 		}
@@ -251,13 +251,13 @@ void Fib::updateWithdraw(char *travelPath,UpdateRib *info)
 		if(!info->isEmpty)
 			if(info->w_OldHop==inherit)
 			{
-				m_pStatics->W_inherit++;
+				m_pUpdateStat->W_inherit++;
 				return ;
 			}
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
 		{
 			pLastFib->is_NNC_area=false;
-			m_pStatics->W_true_goDown++;
+			m_pUpdateStat->W_true_goDown++;
 			return ;
 		}
 	}
