@@ -126,8 +126,12 @@ int main()
 	string ribFileIP="rib2_ip.txt";
 	string updatefile="update_big";
 	
+		/*
+	cout<<"size of int:"<<sizeof(int)<<endl;
+	cout<<"size of long:"<<sizeof(long)<<endl;
+	cout<<"size of long long:"<<sizeof(long long)<<endl;
+	cout<<"size of pointer:"<<sizeof(TestModule *)<<endl;*/
 	
-
 	Rib *tRib=new Rib();
 	Fib *tFib=new Fib();
 	Performance *testCor=new Performance(tRib,tFib);

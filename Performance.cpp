@@ -42,7 +42,7 @@ void Performance::AccUpdate()
 	for(int i=0;i<updateIndex;i++)
 	{
 		pRibTrie->Update(bufferSet+i);
-		//pFibTrie->Update(bufferSet+i,pRibTrie->getUpdate());
+		pFibTrie->Update(bufferSet+i,pRibTrie->getUpdate());
 	}
 	QueryPerformanceCounter(&privious1);
 	updateTimeUsed=updateTimeUsed+1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;

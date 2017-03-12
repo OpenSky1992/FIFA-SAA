@@ -23,7 +23,7 @@ void AllNextHop::addNextHop(int iVal)
 
 AllNextHop::~AllNextHop(void)
 {
-
+	m_mNextList.clear();
 }
 
 
