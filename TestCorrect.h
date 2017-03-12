@@ -6,7 +6,7 @@ class TestCorrect:public TestModule
 public:
 	TestCorrect(Rib *pRib,Fib *pFib);
 	virtual void updateParameter(UpdatePara *para);
-	void examineAlogrithm();
+	void examineAlgorithm();
 	bool exammineOnebyOne();
 	~TestCorrect(void);
 private:

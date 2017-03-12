@@ -1,47 +1,33 @@
+#pragma once
 #include "AllNextHop.h"
+
 
 
 AllNextHop::AllNextHop(void)
 {
-	m_pHead=NULL;
-	length=0;
 }
 
 void AllNextHop::addNextHop(int iVal)
 {
-	NextHop* pTmp=m_pHead;
-	NextHop* pLast=NULL;
-	while(pTmp!=NULL)
+	int length;
+	std::map<int,int>::iterator it=m_mNextList.find(iVal);
+	if(it==m_mNextList.end())
 	{
-		if(pTmp->iVal==iVal)
-			return ;
-		pLast=pTmp;
-		pTmp=pTmp->pNext;
+		length=m_mNextList.size()+1;
+		m_mNextList.insert(std::map<int,int>::value_type(iVal,length));
 	}
-	length++;
-	pTmp=new NextHop();
-	pTmp->iVal=iVal;
-	pTmp->pNext=NULL;
-	if(pLast==NULL)
-		m_pHead=pTmp;
 	else
-		pLast->pNext=pTmp;
+		return ;
 }
 
 
 AllNextHop::~AllNextHop(void)
 {
-	NextHop *pTmp=m_pHead,*pNeed=NULL;
-	while(pTmp!=NULL)
-	{
-		pNeed=pTmp->pNext;
-		delete pTmp;
-		pTmp=pNeed;
-	}
+
 }
 
 
 int AllNextHop::getSizeOfNHS()
 {
-	return length;
+	return m_mNextList.size();
 }

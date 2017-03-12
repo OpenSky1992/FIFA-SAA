@@ -128,15 +128,16 @@ bool TestCorrect::exammineOnebyOne()
 	return NHS_correct&&forward_correct;
 }
 
-void TestCorrect::examineAlogrithm()
+void TestCorrect::examineAlgorithm()
 {
+	cout<<endl<<"examine algorithm:"<<endl;
 	cout<<"compressing one by one:"<<endl;
 	pFibTrie->getFibTrieStatistic()->printInfor();
 
 	Fib *fibTotal=new Fib();
 	fibTotal->ConstructFromRib(pRibTrie->getRibTrie());
 	fibTotal->Compress();
-	cout<<"compression one time:"<<endl<<endl;
+	cout<<"compression one time:"<<endl;
 	fibTotal->getFibTrieStatistic()->printInfor();
 	
 	bool NHS_correct=NHS_isCorrect(fibTotal->getFibTrie(),pFibTrie->getFibTrie());
@@ -147,7 +148,7 @@ void TestCorrect::examineAlogrithm()
 		cout<<"NextHop set,is_NNC_area,intersection are wrong"<<endl;
 	bool forward_correct=forwardCorrect(pRibTrie->getRibTrie(),DEFAULTHOP,pFibTrie->getFibTrie(),DEFAULTHOP);
 	if(forward_correct)
-		cout<<"forward is correct"<<endl;
+		cout<<"forwarding is correct"<<endl;
 	else
-		cout<<"forward is wrong"<<endl;
+		cout<<"forwarding is wrong"<<endl;
 }

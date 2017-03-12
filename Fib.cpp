@@ -342,16 +342,16 @@ void Fib::Compress()
 		m_pTrie->iNewPort=m_pTrie->pNextHop->iVal=DEFAULTHOP;
 	
 
-	LARGE_INTEGER frequence,privious,privious1;
-	if(!QueryPerformanceFrequency(&frequence))	return ;
-	QueryPerformanceCounter(&privious); 
+	//LARGE_INTEGER frequence,privious,privious1;
+	//if(!QueryPerformanceFrequency(&frequence))	return ;
+	//QueryPerformanceCounter(&privious); 
 	PassOneTwo(m_pTrie);
-	QueryPerformanceCounter(&privious1);
-	printf("pass one and two:             %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
+	//QueryPerformanceCounter(&privious1);
+	//printf("pass one and two:             %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
 
 	PassThree(m_pTrie,DEFAULTHOP-1);  //
-	QueryPerformanceCounter(&privious);
-	printf("pass three:                   %d microsecond\n",1000000*(privious.QuadPart-privious1.QuadPart)/frequence.QuadPart);
+	//QueryPerformanceCounter(&privious);
+	//printf("pass three:                   %d microsecond\n",1000000*(privious.QuadPart-privious1.QuadPart)/frequence.QuadPart);
 }
 
 void Fib::FreeSubTree(FibTrie *FreeNode)

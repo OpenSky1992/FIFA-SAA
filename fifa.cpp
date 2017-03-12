@@ -21,8 +21,8 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 	char			operate_type;
 	int				readlines=0;
 
-	long			yearmonthday=0;		//an integer to record year, month, day
-	long			hourminsec=0;		//an integer to record hour, minute, second
+	string			yearmonthday;		//an integer to record year, month, day
+	string			hourminsec;		//an integer to record hour, minute, second
 
 
 	ifstream fin(sFileName);
@@ -46,8 +46,7 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 			fin>>iNextHop;
 		if(UPDATE_WITHDRAW!=operate_type&&UPDATE_ANNOUNCE!=operate_type)
 		{
-			printf("Format of update file Error, quit....\n");
-			getchar();
+			cout<<"Format of update file Error:"<<readlines<<endl;
 			return 0;
 		}
 		parameter.nextHop=iNextHop;
@@ -95,18 +94,21 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 			}
 			test->updateParameter(&parameter);
 
-			/*if(readlines%2000==0)
-			{
-				if(!test->exammineOnebyOne())
-				{
-					cout<<readlines<<":wrong"<<endl;
-					return readlines;
-				}
-				else
-				{
-					cout<<readlines<<":correct"<<endl;	
-				}
-			}*/
+			if(readlines%1000000==0)
+				cout<<readlines/1000000<<endl;
+
+			//if(readlines==9664)
+			//{
+			//	if(!test->exammineOnebyOne())
+			//	{
+			//		cout<<readlines<<":wrong"<<endl;
+			//		return readlines;
+			//	}
+			//	else
+			//	{
+			//		cout<<readlines<<":correct"<<endl;	
+			//	}
+			//}
 			//cout<<readlines<<endl;
 		}
 	}
@@ -120,9 +122,9 @@ int main()
 {
 	int pause;
 	bool ipFormat=true;
-	string ribFile="rib.txt";
+	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="updates2";
+	string updatefile="update_big";
 	
 	
 
@@ -161,9 +163,11 @@ int main()
 
 	string updateFileName=updatefile+".txt";
 	updateFromFile(updateFileName,testCor);
+	
 	testCor->AccUpdate();
 	testCor->printUseTime();
-	//testCor->examineAlogrithm();
+	//testCor->examineAlgorithm();
+	
 	cout<<endl;
 	tRib->getRibTrieStatistic()->printInfor();
 	tFib->getFibTrieStatistic()->printInfor();
@@ -173,7 +177,7 @@ int main()
 	delete tRib;
 	delete tFib;
 	delete testCor;
-	cin>>pause;
+	
 
 	return 0;
 }

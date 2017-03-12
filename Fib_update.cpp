@@ -474,10 +474,9 @@ void Fib::NNC_SS_Double_search(FibTrie *pFibRoot,int oldInheritHop,int newInheri
 	else
 	{
 		pOldTrie->iNewPort=oldInheritHop;
-		if(pNewTrie->iNewPort==newInheritHop)
-			pNewTrie->iNewPort=EMPTYHOP;
-		else
+		if(pNewTrie->iNewPort!=newInheritHop)
 			NsNoChange_standard_select(pNewTrie,pNewTrie->iNewPort,newInheritHop);
+		pNewTrie->iNewPort=EMPTYHOP;
 	}
 }
 

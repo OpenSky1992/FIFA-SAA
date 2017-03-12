@@ -59,7 +59,7 @@ void Rib::prefixNumTravel(RibTrie *pTrie)
 	if(pTrie->iNextHop!=EMPTYHOP)
 	{
 		m_pRibTrieStat->prefixNum++;
-		//m_pAllNHS->addNextHop(pTrie->iNextHop);
+		m_pAllNHS->addNextHop(pTrie->iNextHop);
 		
 	}
 	prefixNumTravel(pTrie->pLeftChild);

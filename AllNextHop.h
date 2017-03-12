@@ -1,11 +1,11 @@
 #pragma once
 #include "common.h"
+#include <map>
 
 class AllNextHop
 {
 private:
-	NextHop *m_pHead;
-	int length;
+	std::map<int,int> m_mNextList;
 public:
 	void addNextHop(int iVal);
 	int getSizeOfNHS();
