@@ -6,7 +6,8 @@
 #define		UPDATE_WITHDRAW			'W'							//withdraw character
 #define		UPDATE_ANNOUNCE			'A'							//announce character
 #define		PREFIX_LEN				32							//the length of ip prefix
-#define		STATISTICS_PERFORMANCE  0
+#define		STATISTICS_PERFORMANCE  0							//0:no statist information about update
+																//make the program better performance,fast run.
 					
 #include <iostream>
 #include <string>
