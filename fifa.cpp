@@ -11,7 +11,7 @@
 
 using namespace std;
 
-unsigned int updateFromFile(string sFileName,TestModule *test)
+unsigned int updateFromFile(string sFileName,Performance *test)
 {
 	char			sPrefix[20];		//prefix from rib file
 	unsigned long	lPrefix;			//the value of Prefix
@@ -99,15 +99,15 @@ unsigned int updateFromFile(string sFileName,TestModule *test)
 
 			//if(readlines==9664)
 			//{
-			//	if(!test->exammineOnebyOne())
-			//	{
-			//		cout<<readlines<<":wrong"<<endl;
-			//		return readlines;
-			//	}
-			//	else
-			//	{
-			//		cout<<readlines<<":correct"<<endl;	
-			//	}
+				//if(!test->exammineOnebyOne())
+				//{
+				//	cout<<readlines<<":wrong"<<endl;
+				//	return readlines;
+				//}
+				//else
+				//{
+				//	cout<<readlines<<":correct"<<endl;	
+				//}
 			//}
 			//cout<<readlines<<endl;
 		}
@@ -149,8 +149,8 @@ int main()
 	}
 	else
 	{
-		tRib->ConvertBinToIP(ribFile,ribFileIP);
-		tRib->BuildRibFromFile(ribFileIP);
+		//tRib->ConvertBinToIP(ribFile,ribFileIP);
+		//tRib->BuildRibFromFile(ribFileIP);
 	}
 	
 	tRib->getRibTrieStatistic()->printInfor();
@@ -177,6 +177,7 @@ int main()
 	tFib->getFibTrieStatistic()->printInfor();
 	cout<<endl;
 	tFib->getUpdateStatistics()->printInfor();
+	testCor->printInfor();
 
 	delete tRib;
 	delete tFib;

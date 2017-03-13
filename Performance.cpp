@@ -10,11 +10,13 @@ Performance::Performance(Rib *pRib,Fib *pFib)
 	pFibTrie=pFib;
 	updateIndex=0;
 	updateTimeUsed=0;
+	pUpdate=new UpdateTravel(pRib,pFib);
 }
 
 
 Performance::~Performance(void)
 {
+	delete pUpdate;
 }
 
 void Performance::printUseTime()
@@ -41,10 +43,11 @@ void Performance::AccUpdate()
 	QueryPerformanceCounter(&privious); 
 	for(int i=0;i<updateIndex;i++)
 	{
-		pRibTrie->Update(bufferSet+i);
-		pFibTrie->Update(bufferSet+i,pRibTrie->getUpdate());
+		pUpdate->Update(bufferSet+i);
 	}
 	QueryPerformanceCounter(&privious1);
 	updateTimeUsed=updateTimeUsed+1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
 	updateIndex=0;
 }
+
+

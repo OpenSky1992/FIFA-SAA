@@ -9,7 +9,7 @@
 Fib::Fib(void)
 {
 	CreateNewNode(m_pTrie);
-	m_pUpdateStat=new UpdateStatistic();
+	m_pUpdateStat=new UpdateFibStatistic();
 	m_pFibTrieStat=new FibTrieStatistic();
 }
 
@@ -25,7 +25,7 @@ FibTrie* Fib::getFibTrie()
 	return m_pTrie;
 }
 
-UpdateStatistic* Fib::getUpdateStatistics()
+UpdateFibStatistic* Fib::getUpdateStatistics()
 {
 	return m_pUpdateStat;
 }

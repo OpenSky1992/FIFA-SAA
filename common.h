@@ -48,16 +48,29 @@ struct UpdatePara
 
 
 //return result from Rib
-class UpdateRib
+class WithdrawInfo
 {
 public:
-	bool				valid;					//if rib change
 	bool				isLeaf;					//is leaf node
-	bool				isEmpty;				//is empty node
+	bool				isEmpty;				//only for non-terminal node
 	int					inheritHop;				//inherit hop
-	int					w_OldHop;				//only for withdraw leaf 
-	int					w_outNumber;			//when update node is leaf node,this variable represent 
-	RibTrie*			pLastRib;
+	int					oldHop;					//old hop
+	int					outNumber;				//only for terminal node
+	RibTrie*			pLastRib;				//only for non-terminal node
+	FibTrie*			pLastFib;
+};
+
+class AnnounceInfo
+{
+public:
+	bool				isLeaf;					//is leaf node
+	bool				isEmpty;				//only for non-terminal node
+	int					inheritHop;				//inherit hop
+	int					outNumber;				//
+	int					iNextHop;				//
+	RibTrie*			pLastRib;				//only for non-terminal node
+	FibTrie*			pLastFib;
+	FibTrie*			pInsertFib;
 };
 
 class StatisticModule
@@ -68,28 +81,39 @@ public:
 };
 
 //the information of statistics update 
-class UpdateStatistic:public StatisticModule
+class UpdateFibStatistic:public StatisticModule
 {
 public:
-	UpdateStatistic();
+	UpdateFibStatistic();
 	virtual void reset();
 	virtual void printInfor();
 
-	int		AnnounceNum;
-	int		A_inValidNum;
+	int		A_select;
 	int		A_leaf_0;
 	int		A_leaf_1;
 	int		A_leaf_2;
 	int		A_inherit;
 	int		A_true_goDown;
 	
-	int		WithdrawNum;
-	int		W_inValidNum;
+	int		W_select;
 	int		W_leaf_0;
 	int		W_leaf_1;
 	int		W_leaf_2;
 	int		W_inherit;
 	int		W_true_goDown;
+};
+
+class UpdateTotalStatistic
+{
+public:
+	UpdateTotalStatistic();
+	virtual void reset();
+	virtual void printInfor();
+
+	int		announceNum;
+	int		A_invalid;
+	int		withdrawNum;
+	int		W_invalid;
 };
 
 class RibTrieStatistic:public StatisticModule

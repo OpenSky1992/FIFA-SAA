@@ -3,24 +3,22 @@
 using namespace std;
 
 
-UpdateStatistic::UpdateStatistic()
+UpdateFibStatistic::UpdateFibStatistic()
 {
 	reset();
 }
 
-void UpdateStatistic::reset()
+void UpdateFibStatistic::reset()
 {
-	AnnounceNum=0;
 	A_inherit=0;
-	A_inValidNum=0;
+	A_select=0;
 	A_leaf_0=0;
 	A_leaf_1=0;
 	A_leaf_2=0;
 	A_true_goDown=0;
 
-	WithdrawNum=0;
 	W_inherit=0;
-	W_inValidNum=0;
+	W_select=0;
 	W_leaf_0=0;
 	W_leaf_1=0;
 	W_leaf_2=0;
@@ -28,25 +26,44 @@ void UpdateStatistic::reset()
 }
 
 
-void UpdateStatistic::printInfor()
+void UpdateFibStatistic::printInfor()
 {
-	cout<<"Announce statistics:"<<endl;
-	cout<<"total:       "<<AnnounceNum<<endl;
-	cout<<"invalid:     "<<A_inValidNum<<endl;
+	cout<<"Fib update statistics:"<<endl;
+	cout<<"select:      "<<A_select<<endl;
 	cout<<"leaf_0:      "<<A_leaf_0<<endl;
 	cout<<"leaf_1:      "<<A_leaf_1<<endl;
 	cout<<"leaf_2:      "<<A_leaf_2<<endl;
 	cout<<"inherit:     "<<A_inherit<<endl;
 	cout<<"trueGoDown:  "<<A_true_goDown<<endl;
 
-	cout<<"Withdraw statistics:"<<endl;
-	cout<<"total:       "<<WithdrawNum<<endl;
-	cout<<"invalid:     "<<W_inValidNum<<endl;
+	cout<<"Fib update statistics:"<<endl;
+	cout<<"select:      "<<W_select<<endl;
 	cout<<"leaf_0:      "<<W_leaf_0<<endl;
 	cout<<"leaf_1:      "<<W_leaf_1<<endl;
 	cout<<"leaf_2:      "<<W_leaf_2<<endl;
 	cout<<"inherit:     "<<W_inherit<<endl;
 	cout<<"trueGoDown:  "<<W_true_goDown<<endl;
+}
+
+UpdateTotalStatistic::UpdateTotalStatistic()
+{
+	reset();
+}
+
+void UpdateTotalStatistic::reset()
+{
+	announceNum=0;
+	A_invalid=0;
+	withdrawNum=0;
+	W_invalid=0;
+}
+
+void UpdateTotalStatistic::printInfor()
+{
+	cout<<"announce number:   "<<announceNum<<endl;
+	cout<<"announce invalid:  "<<A_invalid<<endl;
+	cout<<"withdraw number:   "<<withdrawNum<<endl;
+	cout<<"withdraw invalid:  "<<W_invalid<<endl;
 }
 
 RibTrieStatistic::RibTrieStatistic()

@@ -4,16 +4,17 @@ TestCorrect::TestCorrect(Rib *pRib,Fib *pFib)
 {
 	pRibTrie=pRib;
 	pFibTrie=pFib;
+	pUpdate=new UpdateTravel(pRib,pFib);
 }
 
 TestCorrect::~TestCorrect(void)
 {
+	delete pUpdate;
 }
 
 void TestCorrect::updateParameter(UpdatePara *para)
 {
-	pRibTrie->Update(para);
-	pFibTrie->Update(para,pRibTrie->getUpdate());
+	pUpdate->Update(para);
 }
 
 bool TestCorrect::forwardCorrect(RibTrie *pRib,int inheritRib,FibTrie *pFib,int inheritFib)

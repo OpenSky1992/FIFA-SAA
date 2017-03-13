@@ -5,7 +5,6 @@
 
 Rib::Rib(void)
 {
-	m_pUpdate=new UpdateRib();
 	m_pRibTrieStat=new RibTrieStatistic();
 	m_pAllNHS=new AllNextHop();
 	CreateNewNode(m_pTrie);
@@ -14,7 +13,6 @@ Rib::Rib(void)
 Rib::~Rib(void)
 {
 	FreeSubTree(m_pTrie);
-	delete m_pUpdate;
 	delete m_pRibTrieStat;
 	delete m_pAllNHS;
 }
@@ -38,10 +36,6 @@ RibTrie* Rib::getRibTrie()
 	return m_pTrie;
 }
 
-UpdateRib* Rib::getUpdate()
-{
-	return m_pUpdate;
-}
 
 RibTrieStatistic* Rib::getRibTrieStatistic()
 {
@@ -64,198 +58,6 @@ void Rib::prefixNumTravel(RibTrie *pTrie)
 	}
 	prefixNumTravel(pTrie->pLeftChild);
 	prefixNumTravel(pTrie->pRightChild);
-}
-
-unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
-{
-	char			sBinPrefix[32];		//PREFIX in binary format
-	string			strIpPrefix;		//PREFIX in binary format
-	unsigned int	iPrefixLen;			//the length of PREFIX
-	unsigned int	iNextHop;			//to store NEXTHOP in RIB file
-	unsigned int	iEntryCount=0;		//the number of items that is transformed sucessfully
-	unsigned int	if_root;
-
-	//open the output file 
-	//and prepare store routing information in IP format
-	
-	ofstream fout(sIpFile.c_str());
-
-	
-	ifstream fin(sBinFile.c_str());
-	while (!fin.eof()) {
-		iNextHop = 0;
-		
-		memset(sBinPrefix,0,sizeof(sBinPrefix));
-		fin >>if_root;
-
-		//empty lines are ignored
-		if(if_root == 0){
-			fin>>sBinPrefix>>iNextHop;
-			if(iNextHop==0)
-				continue;
-			string strBin(sBinPrefix);
-			iPrefixLen=strBin.length();
-			strBin.append(32-iPrefixLen,'0');
-
-			//transform routing infomation from binary format into IP format
-			strIpPrefix="";
-			for(int i=0; i<32; i+=8){				//include 4 sub parts
-				int iVal=0;
-				string strVal=strBin.substr(i,8);
-
-				//turn into integer
-				for(int j=7;j>=0;j--){
-					if(strVal.substr(j,1)=="1"){
-						iVal+=(1<<(7-j));
-					}
-				}
-
-				//turn into decimal
-				char buffer[5];
-				memset(buffer,0,sizeof(buffer));
-				sprintf(buffer,"%d",iVal);
-				//itoa(iVal,buffer,10);
-				strVal=string(buffer);
-
-
-				//IP format
-				strIpPrefix += strVal;
-				if(i<24){
-					strIpPrefix += ".";
-				}
-				strVal="";
-			}
-			fout<<strIpPrefix<<"/"<<iPrefixLen<<" "<<iNextHop<<endl;
-		}
-		else if(if_root==1)
-		{
-			fin>>iNextHop;
-			fout<<"0.0.0.0/0  "<<iNextHop<<endl;
-		}
-	}
-
-	//close BinFile
-	fin.close();
-
-	//close IpFile
-	fout<<flush;
-	fout.close();
-
-	return iEntryCount;
-}
-
-void Rib::Update(UpdatePara *para)
-{
-	if(UPDATE_ANNOUNCE==para->operate)
-		m_pUpdate->valid=updateAnnounce(para->nextHop,para->path);
-	else
-		m_pUpdate->valid=updateWithdraw(para->path);
-}
-
-bool Rib::updateAnnounce(int iNextHop,char *insert_C)
-{
-	RibTrie *insertNode=m_pTrie;
-	int default_oldport=DEFAULTHOP;
-
-	for (int i=0;i<(int)strlen(insert_C);i++)
-	{
-		if ('0'==insert_C[i])
-		{
-			if (NULL==insertNode->pLeftChild)
-			{//turn left, if left child is empty, create new node
-				RibTrie* pNewNode;
-				CreateNewNode(pNewNode);
-				pNewNode->pParent=insertNode;
-				insertNode->pLeftChild=pNewNode;
-			}
-			insertNode=insertNode->pLeftChild;
-		}
-		else
-		{//turn right, if right child is empty, create new node
-			if (NULL==insertNode->pRightChild)
-			{
-				RibTrie* pNewNode;
-				CreateNewNode(pNewNode);
-				pNewNode->pParent=insertNode;
-				insertNode->pRightChild=pNewNode;
-			}
-			insertNode=insertNode->pRightChild;
-		}
-		if (insertNode->pParent!=NULL)
-			if (insertNode->pParent->iNextHop!=0)
-				default_oldport=insertNode->pParent->iNextHop;
-	}
-
-	m_pUpdate->inheritHop=default_oldport;
-	
-	if (insertNode->iNextHop==iNextHop)
-		return false;
-	if(insertNode->pLeftChild==NULL&&insertNode->pRightChild==NULL)
-	{
-		m_pUpdate->isLeaf=true;
-		m_pUpdate->pLastRib=NULL;//Leaf node don't need this parameter
-	}
-	else
-	{
-		m_pUpdate->isLeaf=false;
-		m_pUpdate->pLastRib=insertNode;
-		if(insertNode->iNextHop==EMPTYHOP)
-			m_pUpdate->isEmpty=true;
-		else
-			m_pUpdate->isEmpty=false;
-	}
-	insertNode->iNextHop=iNextHop;
-	return true;
-}
-
-bool Rib::updateWithdraw(char *insert_C)
-{
-	RibTrie *lastVisit=m_pTrie;
-	int default_oldport=DEFAULTHOP;
-	for (int i=0;i<(int)strlen(insert_C);i++)
-	{
-		if ('0'==insert_C[i])
-		{
-			if (NULL==lastVisit->pLeftChild)
-				return false;
-			lastVisit=lastVisit->pLeftChild;
-		}
-		else
-		{
-			if (NULL==lastVisit->pRightChild)
-				return false;
-			lastVisit=lastVisit->pRightChild;
-		}
-		if (lastVisit->pParent!=NULL)
-			if (lastVisit->pParent->iNextHop!=0)
-				default_oldport=lastVisit->pParent->iNextHop;
-	}
-
-	m_pUpdate->inheritHop=default_oldport;
-
-	if (EMPTYHOP==lastVisit->iNextHop)//invalid delete operation
-		return false;
-	if (lastVisit->pLeftChild==NULL&&lastVisit->pRightChild==NULL)
-	{
-		m_pUpdate->isLeaf=true;
-		m_pUpdate->w_OldHop=lastVisit->iNextHop;
-		m_pUpdate->w_outNumber=withdrawLeafNode(lastVisit);
-		m_pUpdate->pLastRib=NULL;  //Leaf node don't need this parameter
-	}
-	else
-	{
-		m_pUpdate->isLeaf=false;
-		if(lastVisit->iNextHop==EMPTYHOP)
-			m_pUpdate->isEmpty=true;
-		else
-		{
-			m_pUpdate->w_OldHop=lastVisit->iNextHop;
-			m_pUpdate->isEmpty=false;
-			lastVisit->iNextHop=EMPTYHOP;
-		}
-		m_pUpdate->pLastRib=lastVisit;
-	}
-	return true;
 }
 
 int Rib::withdrawLeafNode(RibTrie *pLeaf)

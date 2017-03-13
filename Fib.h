@@ -9,22 +9,26 @@ public:
 
 	void ConstructFromRib(RibTrie* pRibTrie);
 	void Compress();
-	void Update(UpdatePara *para,UpdateRib *info);
+	//void Update(UpdatePara *para,UpdateRib *info);
+
+	void updateAnnounce(AnnounceInfo *info);
+	void updateWithdraw(WithdrawInfo *info);
+	void CreateNewNode(FibTrie* &pTrie);
 
 	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
 	FibTrie* getFibTrie();
-	UpdateStatistic* getUpdateStatistics();
+	UpdateFibStatistic* getUpdateStatistics();
 	FibTrieStatistic* getFibTrieStatistic();
 
 private:
 	//Data fib trie
 	FibTrie* m_pTrie;	
-	UpdateStatistic* m_pUpdateStat;
+	UpdateFibStatistic* m_pUpdateStat;
 	FibTrieStatistic* m_pFibTrieStat;
 	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
-	void CreateNewNode(FibTrie* &pTrie);
+
 	void PassOneTwo(FibTrie *pTrie);    //this function only be called by function compress
 	void PassThree(FibTrie *pTrie,int inheritHop);
 
@@ -42,8 +46,7 @@ private:
 	void update_select(FibTrie *pFib,int oldHop,int newHop);
 	FibTrie* lastVisitAnnounce(char *travel,FibTrie* &insertNode,int &deep);
 	FibTrie* lastVisitWithdraw(char *travel);
-	void updateAnnounce(int intNextHop,char *travel,UpdateRib *info);
-	void updateWithdraw(char *travel,UpdateRib *info);
+
 	
 	
 	//update function
