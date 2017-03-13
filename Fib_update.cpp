@@ -63,7 +63,9 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 		case 0:
 			if(intNextHop==pLastFib->pNextHop->iVal)
 			{
+#if STATISTICS_PERFORMANCE
 				m_pUpdateStat->A_leaf_0++;
+#endif
 				return ;
 			}
 			else
@@ -74,7 +76,9 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 			insertNode->pNextHop->iVal=intNextHop;			//pLastFib->intersection=false;
 			if(intNextHop==pLastFib->pNextHop->iVal)
 			{
+#if STATISTICS_PERFORMANCE
 				m_pUpdateStat->A_leaf_1++;
+#endif
 				return ;
 			}
 			else
@@ -86,7 +90,9 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
 			if(intNextHop!=pLastFib->pNextHop->iVal)
 				insertNode->iNewPort=intNextHop;
+#if STATISTICS_PERFORMANCE
 			m_pUpdateStat->A_leaf_2++;
+#endif
 			return;
 		}
 	}
@@ -96,7 +102,9 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 		if(info->isEmpty)
 			if(info->inheritHop==intNextHop)
 			{
+#if STATISTICS_PERFORMANCE
 				m_pUpdateStat->A_inherit++;
+#endif
 				return ;
 			}
 		pLastRib->iNextHop=EMPTYHOP;
@@ -104,12 +112,16 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 		{
 			pLastFib->is_NNC_area=false;
 			pLastRib->iNextHop=intNextHop;
+#if STATISTICS_PERFORMANCE
 			m_pUpdateStat->A_true_goDown++;
+#endif
 			return ;
 		}
 		pLastRib->iNextHop=intNextHop;
 	}
+#if STATISTICS_PERFORMANCE
 	m_pUpdateStat->A_select++;
+#endif
 	update_process(pLastFib,oldNHS);
 }
 
@@ -125,7 +137,9 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 		case 0:
 			if(info->inheritHop==info->oldHop)
 			{
+#if STATISTICS_PERFORMANCE
 				m_pUpdateStat->W_leaf_0++;
+#endif
 				return ;
 			}
 			else
@@ -135,7 +149,9 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 			if(info->inheritHop==info->oldHop)
 			{
 				withdrawLeaf(pLastFib,1);
+#if STATISTICS_PERFORMANCE
 				m_pUpdateStat->W_leaf_1++;
+#endif
 				return ;
 			}
 			else
@@ -149,7 +165,9 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 			}
 			break;
 		default:
+#if STATISTICS_PERFORMANCE
 			m_pUpdateStat->W_leaf_2++;
+#endif
 			withdrawLeaf(pLastFib,info->outNumber);
 			return ;
 		}
@@ -162,17 +180,23 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 		if(!info->isEmpty)
 			if(info->oldHop==inherit)
 			{
+#if STATISTICS_PERFORMANCE
 				m_pUpdateStat->W_inherit++;
+#endif
 				return ;
 			}
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
 		{
 			pLastFib->is_NNC_area=false;
+#if STATISTICS_PERFORMANCE
 			m_pUpdateStat->W_true_goDown++;
+#endif
 			return ;
 		}
 	}
+#if STATISTICS_PERFORMANCE
 	m_pUpdateStat->W_select++;
+#endif
 	update_process(pLastFib,oldNHS);
 }
 

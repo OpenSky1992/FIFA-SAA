@@ -29,12 +29,16 @@ void UpdateTravel::Update(UpdatePara *para)
 {
 	if(para->operate==UPDATE_ANNOUNCE)
 	{
+#if STATISTICS_PERFORMANCE
 		m_pTotalStat->announceNum++;
+#endif
 		announceTravel(para->path,para->nextHop);
 	}
 	else
 	{
+#if STATISTICS_PERFORMANCE
 		m_pTotalStat->withdrawNum++;
+#endif
 		withdrawTravel(para->path);
 	}
 }
@@ -123,7 +127,9 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 	m_pAnnounce->inheritHop=default_oldport;
 	if (insertNodeRib->iNextHop==iNextHop)
 	{
+#if STATISTICS_PERFORMANCE
 		m_pTotalStat->A_invalid++;
+#endif
 		return ;
 	}
 	if(insertNodeRib->pLeftChild==NULL&&insertNodeRib->pRightChild==NULL)
@@ -162,7 +168,9 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 		{
 			if (NULL==pLastVisitRib->pLeftChild)
 			{
+#if STATISTICS_PERFORMANCE
 				m_pTotalStat->W_invalid++;
+#endif
 				return ;
 			}
 			pLastVisitRib=pLastVisitRib->pLeftChild;
@@ -172,7 +180,9 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 		{
 			if(NULL==pLastVisitRib->pRightChild)
 			{
+#if STATISTICS_PERFORMANCE
 				m_pTotalStat->W_invalid++;
+#endif
 				return ;
 			}
 			pLastVisitRib=pLastVisitRib->pRightChild;
@@ -185,7 +195,9 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 
 	if (EMPTYHOP==pLastVisitRib->iNextHop)//invalid delete operation
 	{
+#if STATISTICS_PERFORMANCE
 		m_pTotalStat->W_invalid++;
+#endif
 		return ;
 	}
 	m_pWithdraw->inheritHop=default_oldport;

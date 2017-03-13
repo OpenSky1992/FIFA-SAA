@@ -124,7 +124,7 @@ int main()
 	bool ipFormat=true;
 	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_big";
+	string updatefile="update_short";
 	
 		/*
 	cout<<"size of int:"<<sizeof(int)<<endl;
@@ -176,8 +176,11 @@ int main()
 	tRib->getRibTrieStatistic()->printInfor();
 	tFib->getFibTrieStatistic()->printInfor();
 	cout<<endl;
+#if STATISTICS_PERFORMANCE
 	tFib->getUpdateStatistics()->printInfor();
 	testCor->printInfor();
+#endif
+	
 
 	delete tRib;
 	delete tFib;

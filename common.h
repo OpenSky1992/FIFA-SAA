@@ -1,11 +1,12 @@
 #pragma once
 
-#define		HIGHTBIT			2147483648					//Binary: 10000000000000000000000000000000
-#define		EMPTYHOP			0							//empty next hop is 0
-#define		DEFAULTHOP			-1                          //default hop is -1
-#define		UPDATE_WITHDRAW		'W'							//withdraw character
-#define		UPDATE_ANNOUNCE     'A'							//announce character
-#define		PREFIX_LEN			32							//the length of ip prefix
+#define		HIGHTBIT				2147483648					//Binary: 10000000000000000000000000000000
+#define		EMPTYHOP				0							//empty next hop is 0
+#define		DEFAULTHOP				-1                          //default hop is -1
+#define		UPDATE_WITHDRAW			'W'							//withdraw character
+#define		UPDATE_ANNOUNCE			'A'							//announce character
+#define		PREFIX_LEN				32							//the length of ip prefix
+#define		STATISTICS_PERFORMANCE  0
 					
 #include <iostream>
 #include <string>
