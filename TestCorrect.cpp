@@ -1,11 +1,6 @@
 #include "TestCorrect.h"
 
-TestCorrect::TestCorrect(Rib *pRib,Fib *pFib)
-{
-	pRibTrie=pRib;
-	pFibTrie=pFib;
-	pUpdate=new UpdateTravel(pRib,pFib);
-}
+
 
 TestCorrect::~TestCorrect(void)
 {
@@ -79,7 +74,7 @@ bool TestCorrect::NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 	{
 		if(pFibSrc->pLeftChild!=NULL&&pFibSrc->pRightChild!=NULL)
 		{
-			bool NHS_result=pFibTrie->EqualNextHopSet(pFibSrc->pNextHop,pTarget->pNextHop);
+			bool NHS_result=pFibTrie->bitmapEqual(pFibSrc->pNextHop,pTarget->pNextHop);
 			bool inter_result=(pFibSrc->intersection==pTarget->intersection);
 			bool is_continue=NHS_result&&inter_result;
 			if(!is_continue)
@@ -92,7 +87,7 @@ bool TestCorrect::NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 		{
 			if(pTarget->pLeftChild!=NULL||pTarget->pRightChild!=NULL)
 				return false;
-			bool NHS_reuslt=(pFibSrc->pNextHop->iVal==pTarget->pNextHop->iVal);
+			bool NHS_reuslt=pFibTrie->bitmapEqual(pFibSrc->pNextHop,pTarget->pNextHop);
 			return NHS_reuslt&&pTarget->intersection;
 		}
 	}

@@ -15,7 +15,12 @@ public:
 	void updateWithdraw(WithdrawInfo *info);
 	void CreateNewNode(FibTrie* &pTrie);
 
-	bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
+	//bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
+	bool bitmapEqual(BitMap bm1,BitMap bm2);
+	void bitmapInitial(BitMap bm1,unsigned int index);
+	unsigned int bitmapSelect(BitMap bm1);
+	unsigned int BitmapCapacity;
+	
 	FibTrie* getFibTrie();
 	UpdateFibStatistic* getUpdateStatistics();
 	FibTrieStatistic* getFibTrieStatistic();
@@ -30,20 +35,20 @@ private:
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
 
 	void PassOneTwo(FibTrie *pTrie);    //this function only be called by function compress
-	void PassThree(FibTrie *pTrie,int inheritHop);
+	void PassThree(FibTrie *pTrie,unsigned int inheritHop);
 
 	//auxilary function
 	void FreeSubTree(FibTrie *FreeNode);
-	bool ifcontainFunc(int inheritHop,NextHop *ptmp);
-	void freeNextHopSet(NextHop *ptmp);
-	NextHop* CopyNextHopSet(NextHop *ptmp);
+	//bool ifcontainFunc(int inheritHop,NextHop *ptmp);
+	//void freeNextHopSet(NextHop *ptmp);
+	//NextHop* CopyNextHopSet(NextHop *ptmp);
 	void NextHopMerge(FibTrie *pTrie);
-	int priority_select(int oldSelect,int oldInherit,NextHop *ptmp);
+	unsigned int priority_select(unsigned int oldSelect,unsigned int oldInherit,BitMap ptmp);
 	void prefixNumTravel(FibTrie *pTrie);
 
 	//I sperate a old version big function into those little function
-	void update_process(FibTrie *pLastFib,NextHop *oldNHS);
-	void update_select(FibTrie *pFib,int oldHop,int newHop);
+	void update_process(FibTrie *pLastFib,BitMap oldNHS);
+	void update_select(FibTrie *pFib,unsigned int oldHop,unsigned int newHop);
 	FibTrie* lastVisitAnnounce(char *travel,FibTrie* &insertNode,int &deep);
 	FibTrie* lastVisitWithdraw(char *travel);
 
@@ -60,6 +65,20 @@ private:
 
 	//withdraw delete
 	FibTrie* withdrawLeaf(FibTrie *pFib,int upLevel);
+
+
+
+
+	//BitMap function
+	long long m_iStandardBitmap[LONGLONG_SIZE];
+	std::hash_map<long long,int> m_mStandardInverse;
+	
+	void bitmapPrepare();
+	
+	bool bitmapMerge(BitMap bm1,BitMap bm2,BitMap res);
+	bool bitmapExist(unsigned int index,BitMap bm1);
+	void bitmapCopy(BitMap dest,BitMap src);
+	
 };
 
 /*	three important recursive function 

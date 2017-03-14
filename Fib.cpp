@@ -11,6 +11,7 @@ Fib::Fib(void)
 	CreateNewNode(m_pTrie);
 	m_pUpdateStat=new UpdateFibStatistic();
 	m_pFibTrieStat=new FibTrieStatistic();
+	bitmapPrepare();
 }
 
 Fib::~Fib(void)
@@ -41,12 +42,7 @@ void Fib::prefixNumTravel(FibTrie *pTrie)
 		if(pTrie->iNewPort==DEFAULTHOP)
 			m_pFibTrieStat->nonRouteNum++;
 	}
-	NextHop *ptmp=pTrie->pNextHop;
-	while(ptmp!=NULL)
-	{
-		m_pFibTrieStat->totalNextHopNum++;
-		ptmp=ptmp->pNext;
-	}
+
 	prefixNumTravel(pTrie->pLeftChild);
 	prefixNumTravel(pTrie->pRightChild);
 }
@@ -96,10 +92,9 @@ void Fib::CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie)
 		CopyTrieFromRib(pSrcTrie->pRightChild,pTrie->pRightChild);
 	}
 
-
-	//assign pNHop to current node's nexthop
-	pTrie->pNextHop->iVal=pTrie->iNewPort=pSrcTrie->iNextHop;
-	pTrie->pNextHop->pNext=NULL;
+	if(pSrcTrie->iNextHop!=EMPTYHOP)
+		bitmapInitial(pTrie->pNextHop,pSrcTrie->iNextHop);
+	pTrie->iNewPort=pSrcTrie->iNextHop;
 }
 
 //creat a new FIB trie node
@@ -107,11 +102,10 @@ void Fib::CreateNewNode(FibTrie* &pTrie)
 {
 	
 	pTrie= new FibTrie();
-	NextHop* pNHop =new NextHop();
 
-	if (NULL==pNHop || NULL==pTrie)
+	if (NULL==pTrie)
 	{
-		printf("error 2..., exit(0)\n");
+		std::cout<<"new object fail, exit!"<<std::endl;
 		exit(0);
 	}
 
@@ -122,9 +116,10 @@ void Fib::CreateNewNode(FibTrie* &pTrie)
 	pTrie->intersection=false;
 	pTrie->is_NNC_area=false;
 
+	/*
 	pNHop->iVal = EMPTYHOP;
 	pNHop->pNext = NULL;
-	pTrie->pNextHop = pNHop;
+	pTrie->pNextHop = pNHop;*/
 }
 
 int Fib::GetAncestorHop(FibTrie* pTrie)
@@ -152,10 +147,10 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 
 		CreateNewNode(pNTrie);
 		pNTrie->pParent=pTrie;
-		if(pTrie->pNextHop->iVal==EMPTYHOP)
-			pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
-		else							   
-			pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
+		if(pTrie->iNewPort==EMPTYHOP)
+			bitmapInitial(pNTrie->pNextHop,GetAncestorHop(pTrie));
+		else	
+			bitmapInitial(pNTrie->pNextHop,pTrie->iNewPort);
 		pNTrie->intersection=true;
 		pTrie->pLeftChild=pNTrie;
 
@@ -167,10 +162,10 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 		
 		CreateNewNode(pNTrie);
 		pNTrie->pParent=pTrie;
-		if(pTrie->pNextHop->iVal==EMPTYHOP)
-			pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
-		else						
-			pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
+		if(pTrie->iNewPort==EMPTYHOP)
+			bitmapInitial(pNTrie->pNextHop,GetAncestorHop(pTrie));
+		else		
+			bitmapInitial(pNTrie->pNextHop,pTrie->iNewPort);
 		pNTrie->intersection=true;
 		pTrie->pRightChild=pNTrie;
 
@@ -180,7 +175,6 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 	{
 		PassOneTwo(pTrie->pLeftChild);
 		PassOneTwo(pTrie->pRightChild);
-
 		NextHopMerge(pTrie);
 	}
 	else
@@ -192,156 +186,37 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 
 void Fib::NextHopMerge(FibTrie *pTrie)
 {
-	NextHop* pHopHead=NULL;
-	NextHop* pHop=NULL;
-
-	freeNextHopSet(pTrie->pNextHop->pNext);
-	pTrie->pNextHop->pNext=NULL;
-
-	//do the intersection 
-	NextHop* pLNextHop=pTrie->pLeftChild->pNextHop;
-	do{
-		//compare the ival in left sub-tree with the ival in right sub-tree one by one
-		int iHop=pLNextHop->iVal;
-		NextHop* pRNextHop=pTrie->pRightChild->pNextHop;
-		do{
-			if(iHop==pRNextHop->iVal){
-				if(pHop==NULL){
-					//record the Nexthop set
-					pHopHead = pTrie->pNextHop;
-					pHop = pHopHead;
-				}
-				else{
-					//creat a linklist
-					pHop->pNext =new NextHop();
-					if (NULL==pHop->pNext)
-					{
-						printf("error 3..., exit(0)\n");
-						exit(0);
-					}
-					pHop = pHop->pNext;
-				}
-
-				//store the nexthop in phop
-				pHop->iVal = iHop;
-				pHop->pNext = NULL;
-				break ;
-			}
-			//get the next right sub-tree
-			pRNextHop = pRNextHop->pNext;
-		}while(pRNextHop!=NULL);
-		//get the next right sub-tree
-		pLNextHop = pLNextHop->pNext;
-	}while(pLNextHop!=NULL);
-
-	//do the Union operation
-	if( pHopHead==NULL){
-
-		//get the nexthop of left sub-tree
-		NextHop* pLNextHop=pTrie->pLeftChild->pNextHop;
-		do{
-			if( pHopHead==NULL){
-				pHopHead = pTrie->pNextHop;		//get the father's Nexthop as the first element of the set
-				pHop = pHopHead;				//mark the start point of the set
-			}
-			else{
-				pHop->pNext = new NextHop();
-				if (NULL==pHop->pNext)
-				{
-					printf("error 4..., exit(0)\n");
-					exit(0);
-				}
-				pHop = pHop->pNext;
-			}
-			pHop->iVal=pLNextHop->iVal;
-			pHop->pNext = NULL;
-
-			//get the next right sub-tree
-			pLNextHop = pLNextHop->pNext;
-		}while(pLNextHop!=NULL);
-
-		//get the nexthop of right sub-tree
-		NextHop* pRNextHop=pTrie->pRightChild->pNextHop;
-		do{
-			if( pHopHead==NULL){
-				pHopHead = pTrie->pNextHop;		//get the father's Nexthop as the first element of the set
-				pHop = pHopHead;				//mark the start point of the set
-			}
-			else{
-				pHop->pNext =new NextHop();
-				if (NULL==pHop->pNext)
-				{
-					printf("error 5..., exit(0)\n");
-					exit(0);
-				}
-				pHop = pHop->pNext;
-			}
-			pHop->iVal=pRNextHop->iVal;
-			pHop->pNext = NULL;
-
-			pRNextHop = pRNextHop->pNext;
-		}while(pRNextHop!=NULL);
-		pTrie->intersection=false;
-	}
-	else
-		pTrie->intersection=true;
+	pTrie->intersection=bitmapMerge(pTrie->pLeftChild->pNextHop,pTrie->pRightChild->pNextHop,pTrie->pNextHop);
 }
 
-bool Fib::ifcontainFunc(int inheritHop,NextHop *ptmp)
+void Fib::PassThree(FibTrie *pTrie,unsigned int inheritHop)
 {
-	bool ifcontain=false;
-	while(ptmp!=NULL)
-	{
-		if (inheritHop==ptmp->iVal)
-		{
-			ifcontain=true;
-			break;
-		}
-		ptmp=ptmp->pNext;
-	}
-	return ifcontain;
-}
-
-void Fib::freeNextHopSet(NextHop *ptmp)
-{
-	NextHop *p,*q;
-	p=ptmp;
-	while(p!=NULL)
-	{
-		q=p->pNext;
-		delete p;
-		p=q;
-	}
-}
-
-void Fib::PassThree(FibTrie *pTrie,int inheritHop)
-{
+	unsigned int newInherit=inheritHop;
 	bool clear=true;
 	if (pTrie==NULL)
 		return;
 
 	if(pTrie->intersection)
 	{
-		if(!ifcontainFunc(inheritHop,pTrie->pNextHop))
+		if(!bitmapExist(inheritHop,pTrie->pNextHop))
 		{
-			pTrie->iNewPort=pTrie->pNextHop->iVal;
-			inheritHop=pTrie->pNextHop->iVal;
+			newInherit=bitmapSelect(pTrie->pNextHop);
+			pTrie->iNewPort=newInherit;
 			clear=false;
 		}
 	}
 	if(clear)
 		pTrie->iNewPort=EMPTYHOP;
 
-	PassThree(pTrie->pLeftChild, inheritHop);
-	PassThree(pTrie->pRightChild, inheritHop);
+	PassThree(pTrie->pLeftChild, newInherit);
+	PassThree(pTrie->pRightChild, newInherit);
 }
 
 void Fib::Compress()
 {
 	if(m_pTrie->iNewPort==EMPTYHOP)
-		m_pTrie->iNewPort=m_pTrie->pNextHop->iVal=DEFAULTHOP;
+		m_pTrie->iNewPort=DEFAULTHOP;
 	
-
 	//LARGE_INTEGER frequence,privious,privious1;
 	//if(!QueryPerformanceFrequency(&frequence))	return ;
 	//QueryPerformanceCounter(&privious); 
@@ -349,7 +224,7 @@ void Fib::Compress()
 	//QueryPerformanceCounter(&privious1);
 	//printf("pass one and two:             %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
 
-	PassThree(m_pTrie,DEFAULTHOP-1);  //
+	PassThree(m_pTrie,BitmapCapacity);  //
 	//QueryPerformanceCounter(&privious);
 	//printf("pass three:                   %d microsecond\n",1000000*(privious.QuadPart-privious1.QuadPart)/frequence.QuadPart);
 }
@@ -362,8 +237,6 @@ void Fib::FreeSubTree(FibTrie *FreeNode)
 	FreeNode->pLeftChild=NULL;
 	FreeSubTree(FreeNode->pRightChild);
 	FreeNode->pRightChild=NULL;
-	freeNextHopSet(FreeNode->pNextHop);
-	FreeNode->pNextHop=NULL;
 	delete FreeNode;
 }
 

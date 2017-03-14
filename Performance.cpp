@@ -4,16 +4,6 @@
 #include <time.h>
 
 
-Performance::Performance(Rib *pRib,Fib *pFib)
-{
-	pRibTrie=pRib;
-	pFibTrie=pFib;
-	updateIndex=0;
-	updateTimeUsed=0;
-	pUpdate=new UpdateTravel(pRib,pFib);
-}
-
-
 Performance::~Performance(void)
 {
 	delete pUpdate;
@@ -23,7 +13,6 @@ void Performance::printUseTime()
 {
 	cout<<"totoal update time:"<<updateTimeUsed<<endl;
 }
-
 
 void Performance::updateParameter(UpdatePara *para)
 {

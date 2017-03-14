@@ -9,6 +9,7 @@ UpdateTravel::UpdateTravel(Rib *pRib,Fib *pFib)
 	m_pWithdraw=new WithdrawInfo();
 	m_pAnnounce=new AnnounceInfo();
 	m_pTotalStat=new UpdateTotalStatistic();
+	m_pAllNHS=pRib->getAllNextHopSet();
 }
 
 
@@ -32,6 +33,7 @@ void UpdateTravel::Update(UpdatePara *para)
 #if STATISTICS_PERFORMANCE
 		m_pTotalStat->announceNum++;
 #endif
+
 		announceTravel(para->path,para->nextHop);
 	}
 	else
@@ -51,8 +53,19 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 	FibTrie *pLastVisit=insertNodeFib;
 	FibTrie *pNTrie,*pCounterTrie;
 	int default_oldport=DEFAULTHOP;
+	int bitmapSelectNumber;
 	int outDeep=0;
 	int travelLen=(int)strlen(travelPath);
+	int indexOfNextHop=m_pAllNHS->existNextHop(iNextHop);
+	if(indexOfNextHop<0)
+	{
+		indexOfNextHop=-indexOfNextHop;
+		if(indexOfNextHop==pFibTrie->BitmapCapacity)
+		{
+			cout<<"the number of next hop bigger than initial setting."<<endl;
+			exit(0);
+		}
+	}
 	for (int i=0;i<travelLen;i++)
 	{
 		if ('0'==travelPath[i])
@@ -66,7 +79,8 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 				pFibTrie->CreateNewNode(pCounterTrie);
 				insertNodeFib->pRightChild=pCounterTrie;
 				pCounterTrie->pParent=insertNodeFib;
-				pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
+				bitmapSelectNumber=pFibTrie->bitmapSelect(pLastVisit->pNextHop);
+				pFibTrie->bitmapInitial(pCounterTrie->pNextHop,bitmapSelectNumber);
 				pCounterTrie->intersection=true;
 				outDeep++;
 				
@@ -98,7 +112,9 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 				pFibTrie->CreateNewNode(pCounterTrie);
 				insertNodeFib->pLeftChild=pCounterTrie;
 				pCounterTrie->pParent=insertNodeFib;
-				pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
+				bitmapSelectNumber=pFibTrie->bitmapSelect(pLastVisit->pNextHop);
+				pFibTrie->bitmapInitial(pCounterTrie->pNextHop,bitmapSelectNumber);
+				//->iVal=pLastVisit->pNextHop->iVal;
 				pCounterTrie->intersection=true;
 				outDeep++;
 
@@ -120,12 +136,12 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 			insertNodeFib=insertNodeFib->pRightChild;
 		}
 		if (insertNodeRib->pParent!=NULL)
-			if (insertNodeRib->pParent->iNextHop!=0)
+			if (insertNodeRib->pParent->iNextHop!=EMPTYHOP)
 				default_oldport=insertNodeRib->pParent->iNextHop;
 	}
 
 	m_pAnnounce->inheritHop=default_oldport;
-	if (insertNodeRib->iNextHop==iNextHop)
+	if (insertNodeRib->iNextHop==indexOfNextHop)
 	{
 #if STATISTICS_PERFORMANCE
 		m_pTotalStat->A_invalid++;
@@ -146,9 +162,9 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 		else
 			m_pAnnounce->isEmpty=false;
 	}
-	insertNodeRib->iNextHop=iNextHop;
+	insertNodeRib->iNextHop=indexOfNextHop;
 
-	m_pAnnounce->iNextHop=iNextHop;
+	m_pAnnounce->iNextHop=indexOfNextHop;
 	m_pAnnounce->pLastFib=pLastVisit;
 	m_pAnnounce->pInsertFib=insertNodeFib;
 	m_pAnnounce->outNumber=outDeep;

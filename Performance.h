@@ -4,7 +4,11 @@
 class Performance :public TestModule
 {
 public:
-	Performance(Rib *pRib,Fib *pFib);
+	Performance(Rib *pRib,Fib *pFib):TestModule(pRib,pFib)
+	{
+		updateIndex=0;
+		updateTimeUsed=0;
+	}
 	~Performance(void);
 	virtual void updateParameter(UpdatePara *para);
 	void printUseTime();
@@ -12,6 +16,6 @@ public:
 private:
 	int updateIndex;
 	UpdatePara bufferSet[100];
-	long updateTimeUsed;
+	long long updateTimeUsed;
 };
 

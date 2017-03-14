@@ -28,7 +28,7 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 	ifstream fin(sFileName);
 	if (!fin)
 	{
-		printf("!!!error!!!!  no file named:%s\n",sFileName);
+		cout<<"!!!error!!!!  no file named:"<<sFileName<<endl;
 	}
 	cout<<"parsing file:"<<sFileName<<endl;
 	UpdatePara parameter;
@@ -95,19 +95,19 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 			test->updateParameter(&parameter);
 
 			if(readlines%1000000==0)
-				cout<<readlines/1000000<<endl;
+				cout<<"updates numbers:"<<readlines/1000000<<endl;
 
-			//if(readlines==9664)
+			//if(readlines%10000==0)
 			//{
-				//if(!test->exammineOnebyOne())
-				//{
-				//	cout<<readlines<<":wrong"<<endl;
-				//	return readlines;
-				//}
-				//else
-				//{
-				//	cout<<readlines<<":correct"<<endl;	
-				//}
+			//	if(!test->exammineOnebyOne())
+			//	{
+			//		cout<<readlines<<":wrong"<<endl;
+			//		return readlines;
+			//	}
+			//	else
+			//	{
+			//		cout<<readlines<<":correct"<<endl;	
+			//	}
 			//}
 			//cout<<readlines<<endl;
 		}
@@ -124,7 +124,7 @@ int main()
 	bool ipFormat=true;
 	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_mid";
+	string updatefile="update_short";
 	
 		/*
 	cout<<"size of int:"<<sizeof(int)<<endl;
@@ -149,8 +149,8 @@ int main()
 	}
 	else
 	{
-		//tRib->ConvertBinToIP(ribFile,ribFileIP);
-		//tRib->BuildRibFromFile(ribFileIP);
+		tRib->ConvertBinToIP(ribFile,ribFileIP);
+		tRib->BuildRibFromFile(ribFileIP);
 	}
 	
 	tRib->getRibTrieStatistic()->printInfor();

@@ -1,67 +1,20 @@
 #include "Fib.h"
 
-bool Fib::EqualNextHopSet(NextHop *pNextA,NextHop *pNextB)
-{
-	NextHop *pA=pNextA,*pB=pNextB;
-	int lenA=0,lenB=0;
-	while(pA!=NULL)
-	{
-		lenA++;
-		pA=pA->pNext;
-	}
-	while(pB!=NULL)
-	{
-		lenB++;
-		pB=pB->pNext;
-	}
-	if(lenA!=lenB)
-		return false;
-	pA=pNextA;
-	while(pA!=NULL)
-	{
-		if(!ifcontainFunc(pA->iVal,pNextB))
-			return false;
-		pA=pA->pNext;
-	}
-	return true;
-}
-
-
-NextHop* Fib::CopyNextHopSet(NextHop *ptmp)
-{
-	NextHop *pCopyHead,*pOld,*pCopy;
-	struct NextHop* pNHop;
-	pOld=ptmp;
-	pCopyHead=NULL;
-	pCopy=NULL;
-	while(pOld!=NULL)
-	{
-		 pNHop= new NextHop();
-		 pNHop->iVal=pOld->iVal;
-		 pNHop->pNext=NULL;
-		 if(pCopy==NULL)
-			 pCopyHead=pNHop;
-		 else
-			 pCopy->pNext=pNHop;
-		 pCopy=pNHop;
-		 pOld=pOld->pNext;
-	}
-	return pCopyHead;
-}
 
 void Fib::updateAnnounce(AnnounceInfo *info)
 {
 	int intNextHop=info->iNextHop;
 	FibTrie *insertNode=info->pInsertFib;
 	FibTrie *pLastFib=info->pLastFib;
-	NextHop *oldNHS=CopyNextHopSet(pLastFib->pNextHop);
+	BitMap oldNHS;
+	bitmapCopy(oldNHS,pLastFib->pNextHop);
 
 	if(info->isLeaf)
 	{
 		switch(info->outNumber)
 		{
 		case 0:
-			if(intNextHop==pLastFib->pNextHop->iVal)
+			if(intNextHop==bitmapSelect(pLastFib->pNextHop))
 			{
 #if STATISTICS_PERFORMANCE
 				m_pUpdateStat->A_leaf_0++;
@@ -69,12 +22,12 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 				return ;
 			}
 			else
-				insertNode->pNextHop->iVal=intNextHop;
+				bitmapInitial(insertNode->pNextHop,intNextHop);
 			break;
 		case 1:
 			insertNode->intersection=true;
-			insertNode->pNextHop->iVal=intNextHop;			//pLastFib->intersection=false;
-			if(intNextHop==pLastFib->pNextHop->iVal)
+			bitmapInitial(insertNode->pNextHop,intNextHop);//pLastFib->intersection=false;
+			if(intNextHop==bitmapSelect(pLastFib->pNextHop))
 			{
 #if STATISTICS_PERFORMANCE
 				m_pUpdateStat->A_leaf_1++;
@@ -86,9 +39,9 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 			break;
 		default:
 			insertNode->intersection=true;
-			insertNode->pNextHop->iVal=intNextHop;
+			bitmapInitial(insertNode->pNextHop,intNextHop);
 			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
-			if(intNextHop!=pLastFib->pNextHop->iVal)
+			if(intNextHop!=bitmapSelect(pLastFib->pNextHop))
 				insertNode->iNewPort=intNextHop;
 #if STATISTICS_PERFORMANCE
 			m_pUpdateStat->A_leaf_2++;
@@ -128,14 +81,16 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 void Fib::updateWithdraw(WithdrawInfo *info)
 {
 	FibTrie *pLastFib=info->pLastFib;
-	NextHop *oldNHS=CopyNextHopSet(pLastFib->pNextHop);
+	BitMap oldNHS;
+	int inherit=info->inheritHop;
+	bitmapCopy(oldNHS,pLastFib->pNextHop);
 
 	if(info->isLeaf)
 	{
 		switch(info->outNumber)
 		{
 		case 0:
-			if(info->inheritHop==info->oldHop)
+			if(inherit==info->oldHop)
 			{
 #if STATISTICS_PERFORMANCE
 				m_pUpdateStat->W_leaf_0++;
@@ -143,10 +98,11 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 				return ;
 			}
 			else
-				pLastFib->pNextHop->iVal=info->inheritHop;
+				bitmapInitial(pLastFib->pNextHop,inherit);
+				//pLastFib->pNextHop->iVal=info->inheritHop;
 			break;
 		case 1:
-			if(info->inheritHop==info->oldHop)
+			if(inherit==info->oldHop)
 			{
 				withdrawLeaf(pLastFib,1);
 #if STATISTICS_PERFORMANCE
@@ -156,12 +112,9 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 			}
 			else
 			{
-				oldNHS=CopyNextHopSet(pLastFib->pParent->pNextHop);
+				bitmapCopy(oldNHS,pLastFib->pParent->pNextHop);
 				pLastFib=withdrawLeaf(pLastFib,1);
-				pLastFib=pLastFib;
-				pLastFib->pNextHop->iVal=info->inheritHop;
-				freeNextHopSet(pLastFib->pNextHop->pNext);
-				pLastFib->pNextHop->pNext=NULL;
+				bitmapInitial(pLastFib->pNextHop,inherit);
 			}
 			break;
 		default:
@@ -175,8 +128,6 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 	else
 	{
 		RibTrie *pLastRib=info->pLastRib;
-		int inherit=info->inheritHop;
-
 		if(!info->isEmpty)
 			if(info->oldHop==inherit)
 			{
@@ -200,15 +151,15 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 	update_process(pLastFib,oldNHS);
 }
 
-void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
+void Fib::update_process(FibTrie *pLastFib,BitMap oldNHS)
 {	
 	//Nexthop set changing expand
 	FibTrie *pMostBNCF=pLastFib,*pMostTCF=NULL;  //pMostBottomNoChangeFib,pMostTopChangeFib
 	int inheritOldHopFib,inheritNewHopFib;
-	NextHop *oldNextHopSet=oldNHS;
-	while(!EqualNextHopSet(oldNextHopSet,pMostBNCF->pNextHop))
+	BitMap oldNextHopSet;
+	bitmapCopy(oldNextHopSet,oldNHS);
+	while(!bitmapEqual(oldNextHopSet,pMostBNCF->pNextHop))
 	{
-		freeNextHopSet(oldNextHopSet);
 		pMostTCF=pMostBNCF;
 		pMostBNCF=pMostBNCF->pParent;
 		if(pMostBNCF==NULL)
@@ -217,7 +168,7 @@ void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
 			pMostBNCF->pRightChild->is_NNC_area=true;
 		else
 			pMostBNCF->pLeftChild->is_NNC_area=true;
-		oldNextHopSet=CopyNextHopSet(pMostBNCF->pNextHop);
+		bitmapCopy(oldNextHopSet,pMostBNCF->pNextHop);
 		NextHopMerge(pMostBNCF);
 	}
 	//select precess
@@ -248,7 +199,7 @@ void Fib::update_process(FibTrie *pLastFib,NextHop *oldNHS)
 	update_select(pMostBNCF,inheritOldHopFib,inheritNewHopFib);
 }
 
-void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
+void Fib::update_select(FibTrie *pFib,unsigned int oldHop,unsigned int newHop)
 {
 	if(NULL==pFib)
 		return ;
@@ -265,7 +216,7 @@ void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 			inheritOldHopFib=pFib->iNewPort;
 		if(pFib->intersection)
 		{
-			if(!ifcontainFunc(newHop,pFib->pNextHop))
+			if(!bitmapExist(newHop,pFib->pNextHop))
 			{
 				int selectHop=priority_select(pFib->iNewPort,inheritOldHopFib,pFib->pNextHop);
 				pFib->iNewPort=selectHop;
@@ -292,14 +243,14 @@ bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 	}
 	if(pRib->pLeftChild==NULL&&pRib->pRightChild!=NULL)
 	{
-		pFib->pLeftChild->pNextHop->iVal=inheritHop;
+		bitmapInitial(pFib->pLeftChild->pNextHop,inheritHop);
 		updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
 		NextHopMerge(pFib);
 		return false;
 	}
 	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild==NULL)
 	{
-		pFib->pRightChild->pNextHop->iVal=inheritHop;
+		bitmapInitial(pFib->pRightChild->pNextHop,inheritHop);
 		updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
 		NextHopMerge(pFib);
 		return false;
@@ -331,8 +282,8 @@ void Fib::NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop)
 	bool oldHopIn,newHopIn;
 	if(oldHop==newHop)
 		return ;
-	oldHopIn=ifcontainFunc(oldHop,pFib->pNextHop);
-	newHopIn=ifcontainFunc(newHop,pFib->pNextHop);
+	oldHopIn=bitmapExist(oldHop,pFib->pNextHop);
+	newHopIn=bitmapExist(newHop,pFib->pNextHop);
 	if(pFib->intersection)
 	{
 		if(!oldHopIn&&newHopIn)
@@ -392,7 +343,7 @@ FibTrie* Fib::NNC_SS_search(FibTrie *pFibRoot,int iNextHop)
 	FibTrie *pTrie=pFibRoot;
 	while(pTrie->intersection==false)
 	{
-		if(ifcontainFunc(iNextHop,pTrie->pLeftChild->pNextHop))
+		if(bitmapExist(iNextHop,pTrie->pLeftChild->pNextHop))
 			pTrie=pTrie->pLeftChild;
 		else
 			pTrie=pTrie->pRightChild;
@@ -416,21 +367,21 @@ void Fib::NNC_SS_Double_search(FibTrie *pFibRoot,int oldInheritHop,int newInheri
 	}
 }
 
-int Fib::priority_select(int oldSelect,int oldInherit,NextHop *ptmp)
+unsigned int Fib::priority_select(unsigned int oldSelect,unsigned int oldInherit,BitMap ptmp)
 {
 	if(EMPTYHOP!=oldSelect)
 	{
-		if(ifcontainFunc(oldSelect,ptmp))
+		if(bitmapExist(oldSelect,ptmp))
 			return oldSelect;
 		else
-			return ptmp->iVal;
+			return bitmapSelect(ptmp);
 	}
 	else
 	{
-		if(ifcontainFunc(oldInherit,ptmp))
+		if(bitmapExist(oldInherit,ptmp))
 			return oldInherit;
 		else
-			return ptmp->iVal;
+			return bitmapSelect(ptmp);
 	}
 }
 

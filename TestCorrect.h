@@ -4,7 +4,7 @@
 class TestCorrect:public TestModule
 {
 public:
-	TestCorrect(Rib *pRib,Fib *pFib);
+	TestCorrect(Rib *pRib,Fib *pFib):TestModule(pRib,pFib){}
 	virtual void updateParameter(UpdatePara *para);
 	void examineAlgorithm();
 	bool exammineOnebyOne();

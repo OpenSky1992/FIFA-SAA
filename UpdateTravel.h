@@ -21,6 +21,7 @@ private:
 	WithdrawInfo* m_pWithdraw;
 
 	UpdateTotalStatistic* m_pTotalStat;
+	AllNextHop* m_pAllNHS;
 
 	void withdrawTravel(char *travel);
 	void announceTravel(char *travel,int iNextHop);

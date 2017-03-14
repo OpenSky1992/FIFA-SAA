@@ -8,14 +8,15 @@ class Rib
 public:
 	Rib(void);
 	~Rib(void);
-	//void Update(UpdatePara *para);
+
 	unsigned int BuildRibFromFile(string sFileName);
 	int	withdrawLeafNode(RibTrie *pTrie);
 	void CreateNewNode(RibTrie* &pTrie);
-	//unsigned int ConvertBinToIP(string sBinFile,string sIpFile);
+	unsigned int ConvertBinToIP(string sBinFile,string sIpFile);
 
 	RibTrie* getRibTrie();
 	RibTrieStatistic* getRibTrieStatistic();
+	AllNextHop* getAllNextHopSet();
 
 private:
 	RibTrie* m_pTrie;				//RibTrie

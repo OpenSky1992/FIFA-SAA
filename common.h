@@ -1,22 +1,24 @@
 #pragma once
 
 #define		HIGHTBIT				2147483648					//Binary: 10000000000000000000000000000000
-#define		EMPTYHOP				0							//empty next hop is 0
-#define		DEFAULTHOP				-1                          //default hop is -1
+#define		EMPTYHOP				-1							//empty next hop is -1
+#define		DEFAULTHOP				0                           //default hop is 0
 #define		UPDATE_WITHDRAW			'W'							//withdraw character
 #define		UPDATE_ANNOUNCE			'A'							//announce character
 #define		PREFIX_LEN				32							//the length of ip prefix
-#define		STATISTICS_PERFORMANCE  0							//0:no statist information about update
-																//make the program better performance,fast run.
+#define		STATISTICS_PERFORMANCE  0							//0:no statistical information about update,make the program better performance,fast run.
+#define		BITMAPLENGTH			1							//this number n represent the size of bitmap,how many long long can represent this bitmap
+//the BITMAPLENGTH more big,this program costumes more memeory and more time to run(more slow),so we must keep this number more small (restrict condition:BITMAPLENGTH>=1)
+#define		LONGLONG_SIZE			(8*sizeof(long long))
+
 					
 #include <iostream>
 #include <string>
+#include <hash_map>
+#include <cstdlib>
 
-//The defination of linklist Nexhop
-struct NextHop{
-	NextHop*			pNext;					
-	int					iVal;					//the address of Nexthop£¬0 means empty
-};
+
+typedef long long BitMap[BITMAPLENGTH];
 
 //node in FibTrie
 struct FibTrie
@@ -24,10 +26,11 @@ struct FibTrie
 	FibTrie*			pParent;				//parent pointer
 	FibTrie*			pLeftChild;				//point to left child
 	FibTrie*			pRightChild;			//point to right child
-	int					iNewPort;				//new port
+	int					iNewPort;				//new port,the number of nexthop is small,so char may be better
 	bool				intersection;			//record intersection or union
 	bool				is_NNC_area;			//for update,NCC: Nexthop set No Change
-	NextHop*			pNextHop;				//Nexthop set
+	//NextHop*			pNextHop;				//Nexthop set
+	BitMap				pNextHop;
 };
 
 //node in RibTrie
@@ -90,19 +93,19 @@ public:
 	virtual void reset();
 	virtual void printInfor();
 
-	int		A_select;
-	int		A_leaf_0;
-	int		A_leaf_1;
-	int		A_leaf_2;
-	int		A_inherit;
-	int		A_true_goDown;
+	unsigned int		A_select;
+	unsigned int		A_leaf_0;
+	unsigned int		A_leaf_1;
+	unsigned int		A_leaf_2;
+	unsigned int		A_inherit;
+	unsigned int		A_true_goDown;
 	
-	int		W_select;
-	int		W_leaf_0;
-	int		W_leaf_1;
-	int		W_leaf_2;
-	int		W_inherit;
-	int		W_true_goDown;
+	unsigned int		W_select;
+	unsigned int		W_leaf_0;
+	unsigned int		W_leaf_1;
+	unsigned int		W_leaf_2;
+	unsigned int		W_inherit;
+	unsigned int		W_true_goDown;
 };
 
 class UpdateTotalStatistic
@@ -112,10 +115,10 @@ public:
 	virtual void reset();
 	virtual void printInfor();
 
-	int		announceNum;
-	int		A_invalid;
-	int		withdrawNum;
-	int		W_invalid;
+	unsigned int		announceNum;
+	unsigned int		A_invalid;
+	unsigned int		withdrawNum;
+	unsigned int		W_invalid;
 };
 
 class RibTrieStatistic:public StatisticModule
@@ -124,9 +127,9 @@ public:
 	RibTrieStatistic();
 	virtual void reset();
 	virtual void printInfor();
-	int		prefixNum;			//prefix number
-	int		totalNodeNum;		//total Node number
-	int		diffNextHopNum;		//different Next hop number
+	unsigned int		prefixNum;			//prefix number
+	unsigned int		totalNodeNum;		//total Node number
+	unsigned int		diffNextHopNum;		//different Next hop number
 };
 
 class FibTrieStatistic:public StatisticModule
@@ -135,8 +138,8 @@ public:
 	FibTrieStatistic();
 	virtual void reset();
 	virtual void printInfor();
-	int		prefixNum;			//prefix number
-	int		totalNodeNum;		//total Node number
-	int		nonRouteNum;		//non-route prefix number
-	int		totalNextHopNum;    //next hop number count
+	unsigned int		prefixNum;			//prefix number
+	unsigned int		totalNodeNum;		//total Node number
+	unsigned int		nonRouteNum;		//non-route prefix number
+	unsigned int		totalNextHopNum;    //next hop number count
 };

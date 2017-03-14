@@ -17,12 +17,95 @@ Rib::~Rib(void)
 	delete m_pAllNHS;
 }
 
+AllNextHop* Rib::getAllNextHopSet()
+{
+	return m_pAllNHS;
+}
+
+unsigned int Rib::ConvertBinToIP(string sBinFile,string sIpFile)
+{
+	char			sBinPrefix[32];		//PREFIX in binary format
+	string			strIpPrefix;		//PREFIX in binary format
+	unsigned int	iPrefixLen;			//the length of PREFIX
+	unsigned int	iNextHop;			//to store NEXTHOP in RIB file
+	unsigned int	iEntryCount=0;		//the number of items that is transformed sucessfully
+	unsigned int	if_root;
+
+	//open the output file 
+	//and prepare store routing information in IP format
+	
+	ofstream fout(sIpFile.c_str());
+
+	
+	ifstream fin(sBinFile.c_str());
+	while (!fin.eof()) {
+		iNextHop = 0;
+		
+		memset(sBinPrefix,0,sizeof(sBinPrefix));
+		fin >>if_root;
+
+		//empty lines are ignored
+		if(if_root == 0){
+			fin>>sBinPrefix>>iNextHop;
+			if(iNextHop==0)
+				continue;
+			string strBin(sBinPrefix);
+			iPrefixLen=strBin.length();
+			strBin.append(32-iPrefixLen,'0');
+
+			//transform routing infomation from binary format into IP format
+			strIpPrefix="";
+			for(int i=0; i<32; i+=8){				//include 4 sub parts
+				int iVal=0;
+				string strVal=strBin.substr(i,8);
+
+				//turn into integer
+				for(int j=7;j>=0;j--){
+					if(strVal.substr(j,1)=="1"){
+						iVal+=(1<<(7-j));
+					}
+				}
+
+				//turn into decimal
+				char buffer[5];
+				memset(buffer,0,sizeof(buffer));
+				sprintf(buffer,"%d",iVal);
+				//itoa(iVal,buffer,10);
+				strVal=string(buffer);
+
+
+				//IP format
+				strIpPrefix += strVal;
+				if(i<24){
+					strIpPrefix += ".";
+				}
+				strVal="";
+			}
+			fout<<strIpPrefix<<"/"<<iPrefixLen<<" "<<iNextHop<<endl;
+		}
+		else if(if_root==1)
+		{
+			fin>>iNextHop;
+			fout<<"0.0.0.0/0  "<<iNextHop<<endl;
+		}
+	}
+
+	//close BinFile
+	fin.close();
+
+	//close IpFile
+	fout<<flush;
+	fout.close();
+
+	return iEntryCount;
+}
+
 void Rib::CreateNewNode(RibTrie* &pTrie)
 {
 	pTrie=new RibTrie();
 	if (NULL==m_pTrie)
 	{
-		printf("error 10..., exit(0)\n");
+		std::cout<<"new object fail, exit!"<<std::endl;
 		exit(0);
 	}
 	pTrie->pParent=NULL;
@@ -35,7 +118,6 @@ RibTrie* Rib::getRibTrie()
 {
 	return m_pTrie;
 }
-
 
 RibTrieStatistic* Rib::getRibTrieStatistic()
 {
@@ -53,8 +135,6 @@ void Rib::prefixNumTravel(RibTrie *pTrie)
 	if(pTrie->iNextHop!=EMPTYHOP)
 	{
 		m_pRibTrieStat->prefixNum++;
-		m_pAllNHS->addNextHop(pTrie->iNextHop);
-		
 	}
 	prefixNumTravel(pTrie->pLeftChild);
 	prefixNumTravel(pTrie->pRightChild);
@@ -171,6 +251,9 @@ void Rib::AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNe
 	//get the root of rib
 	RibTrie* pTrie=m_pTrie;
 	RibTrie* pTChild;
+	int indexOfNextHop=m_pAllNHS->existNextHop(iNextHop);
+	if(indexOfNextHop<0)
+		indexOfNextHop=indexOfNextHop*-1;
 	for(unsigned int i=0; i<iPrefixLen; i++){
 		//turn right
 		if(((lPrefix<<i) & HIGHTBIT)==HIGHTBIT){
@@ -196,7 +279,7 @@ void Rib::AddNode(unsigned long lPrefix,unsigned int iPrefixLen,unsigned int iNe
 			pTrie = pTrie->pLeftChild;
 		}
 	}
-	pTrie->iNextHop = iNextHop;
+	pTrie->iNextHop = indexOfNextHop;
 }
 
 void Rib::FreeSubTree(RibTrie *freeNode)

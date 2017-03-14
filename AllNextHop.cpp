@@ -5,19 +5,21 @@
 
 AllNextHop::AllNextHop(void)
 {
+	m_mNextList[0]=0;//very import,because 0 represent default hop in our hash_map
 }
 
-void AllNextHop::addNextHop(int iVal)
+int AllNextHop::existNextHop(int iVal)
 {
 	int length;
-	std::map<int,int>::iterator it=m_mNextList.find(iVal);
+	std::hash_map<int,int>::iterator it=m_mNextList.find(iVal);
 	if(it==m_mNextList.end())
 	{
-		length=m_mNextList.size()+1;
-		m_mNextList.insert(std::map<int,int>::value_type(iVal,length));
+		length=m_mNextList.size();
+		m_mNextList[iVal]=length;
+		return -length;
 	}
 	else
-		return ;
+		return it->second;		//should return a value;   it->second
 }
 
 
