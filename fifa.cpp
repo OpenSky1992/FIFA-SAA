@@ -11,7 +11,7 @@
 
 using namespace std;
 
-unsigned int updateFromFile(string sFileName,TestCorrect *test)
+unsigned int updateFromFile(string sFileName,Performance *test)
 {
 	char			sPrefix[20];		//prefix from rib file
 	unsigned long	lPrefix;			//the value of Prefix
@@ -124,7 +124,7 @@ int main()
 	bool ipFormat=true;
 	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_big";
+	string updatefile="update_mid";
 	
 	/*
 	//cout<<"size of FibTrieKKKKK:"<<sizeof(FibTrieKKKKK)<<endl;
@@ -138,7 +138,7 @@ int main()
 	
 	Rib *tRib=new Rib();
 	Fib *tFib=new Fib();
-	TestCorrect *testCor=new TestCorrect(tRib,tFib);
+	Performance *testCor=new Performance(tRib,tFib);
 
 	LARGE_INTEGER frequence,privious,privious1;
 	if(!QueryPerformanceFrequency(&frequence))return 0;
@@ -171,9 +171,9 @@ int main()
 	string updateFileName=updatefile+".txt";
 	updateFromFile(updateFileName,testCor);
 	
-	//testCor->AccUpdate();
-	//testCor->printUseTime();
-	testCor->examineAlgorithm();
+	testCor->AccUpdate();
+	testCor->printUseTime();
+	//testCor->examineAlgorithm();
 	
 	cout<<endl;
 	tRib->getRibTrieStatistic()->printInfor();
@@ -184,10 +184,10 @@ int main()
 		tFib->getUpdateStatistics()->printInfor();
 	#endif
 	
-
+	delete testCor;
 	delete tRib;
 	delete tFib;
-	delete testCor;
+	
 	
 
 	return 0;
