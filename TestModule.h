@@ -10,7 +10,12 @@ public:
 		pFibTrie=pFib;
 		pUpdate=new UpdateTravel(pRib,pFib);
 	}
-	~TestModule(void){};
+	~TestModule(void)
+	{
+		pRibTrie=NULL;
+		pFibTrie=NULL;
+		delete pUpdate;
+	};
 	virtual void updateParameter(UpdatePara *para)=0;
 	void printInfor()
 	{

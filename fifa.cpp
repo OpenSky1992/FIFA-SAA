@@ -120,7 +120,6 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 
 int main()
 {
-	int pause;
 	bool ipFormat=true;
 	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
@@ -187,7 +186,6 @@ int main()
 	delete testCor;
 	delete tRib;
 	delete tFib;
-	
 	
 
 	return 0;

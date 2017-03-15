@@ -15,6 +15,8 @@ UpdateTravel::UpdateTravel(Rib *pRib,Fib *pFib)
 
 UpdateTravel::~UpdateTravel(void)
 {
+	pRibTrie=NULL;
+	pFibTrie=NULL;
 	delete m_pWithdraw;
 	delete m_pAnnounce;
 	delete m_pTotalStat;

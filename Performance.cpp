@@ -4,11 +4,6 @@
 #include <time.h>
 
 
-Performance::~Performance(void)
-{
-	delete pUpdate;
-}
-
 void Performance::printUseTime()
 {
 	cout<<"totoal update time:"<<updateTimeUsed<<endl;

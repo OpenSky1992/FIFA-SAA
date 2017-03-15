@@ -9,7 +9,6 @@ public:
 		updateIndex=0;
 		updateTimeUsed=0;
 	}
-	~Performance(void);
 	virtual void updateParameter(UpdatePara *para);
 	void printUseTime();
 	void AccUpdate();

@@ -8,7 +8,6 @@ public:
 	virtual void updateParameter(UpdatePara *para);
 	void examineAlgorithm();
 	bool exammineOnebyOne();
-	~TestCorrect(void);
 private:
 	bool forwardCorrect(RibTrie *pRib,int inheritR,FibTrie *pFib,int inheritF);
 	bool NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget);

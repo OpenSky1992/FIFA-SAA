@@ -2,11 +2,6 @@
 
 
 
-TestCorrect::~TestCorrect(void)
-{
-	delete pUpdate;
-}
-
 void TestCorrect::updateParameter(UpdatePara *para)
 {
 	pUpdate->Update(para);
