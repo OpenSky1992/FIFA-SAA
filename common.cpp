@@ -3,6 +3,7 @@
 using namespace std;
 
 
+
 UpdateFibStatistic::UpdateFibStatistic()
 {
 	reset();
@@ -23,12 +24,17 @@ void UpdateFibStatistic::reset()
 	W_leaf_1=0;
 	W_leaf_2=0;
 	W_true_goDown=0;
-}
 
+	upwardStopNum=0;
+	itselfStopNum=0;
+	untilRootNum=0;
+	for(int i=0;i<PREFIX_LEN;i++)
+		influenceRange[i]=0;
+}
 
 void UpdateFibStatistic::printInfor()
 {
-	cout<<"Fib update statistics:"<<endl;
+	cout<<"Fib announce statistics:"<<endl;
 	cout<<"select:      "<<A_select<<endl;
 	cout<<"leaf_0:      "<<A_leaf_0<<endl;
 	cout<<"leaf_1:      "<<A_leaf_1<<endl;
@@ -36,13 +42,21 @@ void UpdateFibStatistic::printInfor()
 	cout<<"inherit:     "<<A_inherit<<endl;
 	cout<<"trueGoDown:  "<<A_true_goDown<<endl;
 
-	cout<<"Fib update statistics:"<<endl;
+	cout<<"Fib withdraw statistics:"<<endl;
 	cout<<"select:      "<<W_select<<endl;
 	cout<<"leaf_0:      "<<W_leaf_0<<endl;
 	cout<<"leaf_1:      "<<W_leaf_1<<endl;
 	cout<<"leaf_2:      "<<W_leaf_2<<endl;
 	cout<<"inherit:     "<<W_inherit<<endl;
 	cout<<"trueGoDown:  "<<W_true_goDown<<endl;
+
+	cout<<"upwardstop:  "<<upwardStopNum<<endl;
+	cout<<"itselfstop:  "<<itselfStopNum<<endl;
+	cout<<"untilRoot:   "<<untilRootNum<<endl;
+
+	for(int i=0;i<PREFIX_LEN;i++)
+		if(influenceRange[i]!=0)
+			cout<<"influence deep "<<setw(2)<<i<<":  "<<influenceRange[i]<<endl;
 }
 
 UpdateTotalStatistic::UpdateTotalStatistic()
@@ -84,7 +98,6 @@ void RibTrieStatistic::printInfor()
 	cout<<"Rib:total node number:        "<<totalNodeNum<<endl;
 	cout<<"Rib:different nexthop number: "<<diffNextHopNum<<endl;
 }
-
 
 FibTrieStatistic::FibTrieStatistic()
 {

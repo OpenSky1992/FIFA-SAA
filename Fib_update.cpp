@@ -153,12 +153,16 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 void Fib::update_process(FibTrie *pLastFib,BitMap oldNHS)
 {	
 	//Nexthop set changing expand
+	int upLevel=0;
 	FibTrie *pMostBNCF=pLastFib,*pMostTCF=NULL;  //pMostBottomNoChangeFib,pMostTopChangeFib
 	int inheritOldHopFib,inheritNewHopFib;
 	BitMap oldNextHopSet;
 	bitmapCopy(oldNextHopSet,oldNHS);
 	while(!bitmapEqual(oldNextHopSet,pMostBNCF->pNextHop))
 	{
+		#if STATISTICS_PERFORMANCE
+			upLevel++;
+		#endif
 		pMostTCF=pMostBNCF;
 		pMostBNCF=pMostBNCF->pParent;
 		if(pMostBNCF==NULL)
@@ -170,9 +174,15 @@ void Fib::update_process(FibTrie *pLastFib,BitMap oldNHS)
 		bitmapCopy(oldNextHopSet,pMostBNCF->pNextHop);
 		NextHopMerge(pMostBNCF);
 	}
+	#if STATISTICS_PERFORMANCE
+		m_pUpdateStat->influenceRange[upLevel]++;
+	#endif
 	//select precess
 	if(pMostBNCF==NULL)
 	{
+		#if STATISTICS_PERFORMANCE
+			m_pUpdateStat->untilRootNum++;
+		#endif
 		inheritOldHopFib=DEFAULTHOP-1;
 		inheritNewHopFib=DEFAULTHOP-1;
 		pMostBNCF=m_pTrie;
@@ -181,6 +191,9 @@ void Fib::update_process(FibTrie *pLastFib,BitMap oldNHS)
 	{
 		if(pMostTCF!=NULL)
 		{//inheritOldHopFib must came from its father
+			#if STATISTICS_PERFORMANCE
+				m_pUpdateStat->upwardStopNum++;
+			#endif
 			inheritOldHopFib=GetAncestorHop(pMostBNCF);
 			inheritNewHopFib=inheritOldHopFib;
 			if(pMostBNCF->pLeftChild==pMostTCF)
@@ -191,6 +204,9 @@ void Fib::update_process(FibTrie *pLastFib,BitMap oldNHS)
 		}
 		else
 		{//inheritOldHopFib must came from its father
+			#if STATISTICS_PERFORMANCE
+				m_pUpdateStat->itselfStopNum++;
+			#endif
 			inheritOldHopFib=GetAncestorHop(pMostBNCF->pParent);
 			inheritNewHopFib=inheritOldHopFib;
 		}

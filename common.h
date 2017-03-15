@@ -6,13 +6,14 @@
 #define		UPDATE_WITHDRAW			'W'							//withdraw character
 #define		UPDATE_ANNOUNCE			'A'							//announce character
 #define		PREFIX_LEN				32							//the length of ip prefix
-#define		STATISTICS_PERFORMANCE  0							//0:no statistical information about update,make the program better performance,fast run.
+#define		STATISTICS_PERFORMANCE  1							//0:no statistical information about update,make the program better performance,fast run.
 #define		BITMAPLENGTH			1							//this number n represent the size of bitmap,how many long long can represent this bitmap
 //the BITMAPLENGTH more big,this program costumes more memeory and more time to run(more slow),so we must keep this number more small (restrict condition:BITMAPLENGTH>=1)
 #define		LONGLONG_SIZE			(8*sizeof(long long))
 
 					
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <hash_map>
 #include <cstdlib>
@@ -98,6 +99,7 @@ public:
 	virtual void printInfor()=0;
 };
 
+
 //the information of statistics update 
 class UpdateFibStatistic:public StatisticModule
 {
@@ -105,6 +107,11 @@ public:
 	UpdateFibStatistic();
 	virtual void reset();
 	virtual void printInfor();
+
+	unsigned int upwardStopNum;
+	unsigned int itselfStopNum;
+	unsigned int untilRootNum;
+	unsigned int influenceRange[PREFIX_LEN]; 
 
 	unsigned int		A_select;
 	unsigned int		A_leaf_0;
@@ -121,7 +128,7 @@ public:
 	unsigned int		W_true_goDown;
 };
 
-class UpdateTotalStatistic
+class UpdateTotalStatistic:public StatisticModule
 {
 public:
 	UpdateTotalStatistic();

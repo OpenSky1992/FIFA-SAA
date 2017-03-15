@@ -95,20 +95,20 @@ unsigned int updateFromFile(string sFileName,TestCorrect *test)
 			test->updateParameter(&parameter);
 
 			if(readlines%1000000==0)
-				cout<<"updates numbers:"<<readlines/1000000<<endl;
+				cout<<"updates line numbers:"<<readlines<<endl;
 
-			if(readlines%1000==0)
-			{
-				if(!test->exammineOnebyOne())
-				{
-					cout<<readlines<<":wrong"<<endl;
-					return readlines;
-				}
-				else
-				{
-					cout<<readlines<<":correct"<<endl;	
-				}
-			}
+			//if(readlines%1000==0)
+			//{
+			//	if(!test->exammineOnebyOne())
+			//	{
+			//		cout<<readlines<<":wrong"<<endl;
+			//		return readlines;
+			//	}
+			//	else
+			//	{
+			//		cout<<readlines<<":correct"<<endl;	
+			//	}
+			//}
 			//cout<<readlines<<endl;
 		}
 	}
@@ -124,7 +124,7 @@ int main()
 	bool ipFormat=true;
 	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_short";
+	string updatefile="update_big";
 	
 	/*
 	//cout<<"size of FibTrieKKKKK:"<<sizeof(FibTrieKKKKK)<<endl;
@@ -180,8 +180,8 @@ int main()
 	tFib->getFibTrieStatistic()->printInfor();
 	cout<<endl;
 	#if STATISTICS_PERFORMANCE
-		tFib->getUpdateStatistics()->printInfor();
 		testCor->printInfor();
+		tFib->getUpdateStatistics()->printInfor();
 	#endif
 	
 

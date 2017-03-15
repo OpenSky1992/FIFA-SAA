@@ -31,6 +31,7 @@ private:
 	FibTrie* m_pTrie;	
 	UpdateFibStatistic* m_pUpdateStat;
 	FibTrieStatistic* m_pFibTrieStat;
+
 	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
