@@ -33,6 +33,19 @@ struct FibTrie
 	BitMap				pNextHop;
 };
 
+/*
+struct FibTrieKKKKK
+{//this class test size of struct
+	FibTrie*			pParent;				//parent pointer
+	FibTrie*			pLeftChild;				//point to left child
+	FibTrie*			pRightChild;			//point to right child
+	int					iNewPort;				//new port,the number of nexthop is small,so char may be better
+	//bool				intersection;			//record intersection or union
+	//bool				is_NNC_area;			//for update,NCC: Nexthop set No Change
+	//NextHop*			pNextHop;				//Nexthop set
+	BitMap				pNextHop;
+};*/
+
 //node in RibTrie
 struct RibTrie
 {
@@ -141,5 +154,5 @@ public:
 	unsigned int		prefixNum;			//prefix number
 	unsigned int		totalNodeNum;		//total Node number
 	unsigned int		nonRouteNum;		//non-route prefix number
-	unsigned int		totalNextHopNum;    //next hop number count
+	//unsigned int		totalNextHopNum;    //next hop number count
 };

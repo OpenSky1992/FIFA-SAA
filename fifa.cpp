@@ -11,7 +11,7 @@
 
 using namespace std;
 
-unsigned int updateFromFile(string sFileName,Performance *test)
+unsigned int updateFromFile(string sFileName,TestCorrect *test)
 {
 	char			sPrefix[20];		//prefix from rib file
 	unsigned long	lPrefix;			//the value of Prefix
@@ -97,18 +97,18 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 			if(readlines%1000000==0)
 				cout<<"updates numbers:"<<readlines/1000000<<endl;
 
-			//if(readlines%10000==0)
-			//{
-			//	if(!test->exammineOnebyOne())
-			//	{
-			//		cout<<readlines<<":wrong"<<endl;
-			//		return readlines;
-			//	}
-			//	else
-			//	{
-			//		cout<<readlines<<":correct"<<endl;	
-			//	}
-			//}
+			if(readlines%1000==0)
+			{
+				if(!test->exammineOnebyOne())
+				{
+					cout<<readlines<<":wrong"<<endl;
+					return readlines;
+				}
+				else
+				{
+					cout<<readlines<<":correct"<<endl;	
+				}
+			}
 			//cout<<readlines<<endl;
 		}
 	}
@@ -126,15 +126,19 @@ int main()
 	string ribFileIP="rib2_ip.txt";
 	string updatefile="update_short";
 	
-		/*
+	/*
+	//cout<<"size of FibTrieKKKKK:"<<sizeof(FibTrieKKKKK)<<endl;
 	cout<<"size of int:"<<sizeof(int)<<endl;
 	cout<<"size of long:"<<sizeof(long)<<endl;
 	cout<<"size of long long:"<<sizeof(long long)<<endl;
-	cout<<"size of pointer:"<<sizeof(TestModule *)<<endl;*/
+	cout<<"size of pointer:"<<sizeof(TestModule *)<<endl;
+	cout<<"size of RibTrie:"<<sizeof(RibTrie )<<endl;
+	cout<<"size of FibTrie:"<<sizeof(FibTrie )<<endl;
+	cout<<"size of UpdateTotalStatistic:"<<sizeof(UpdateTotalStatistic)<<endl;*/
 	
 	Rib *tRib=new Rib();
 	Fib *tFib=new Fib();
-	Performance *testCor=new Performance(tRib,tFib);
+	TestCorrect *testCor=new TestCorrect(tRib,tFib);
 
 	LARGE_INTEGER frequence,privious,privious1;
 	if(!QueryPerformanceFrequency(&frequence))return 0;
@@ -152,8 +156,7 @@ int main()
 		tRib->ConvertBinToIP(ribFile,ribFileIP);
 		tRib->BuildRibFromFile(ribFileIP);
 	}
-	
-	tRib->getRibTrieStatistic()->printInfor();
+	//tRib->getRibTrieStatistic()->printInfor();
 	cout<<"construct from rib..."<<endl;
 	tFib->ConstructFromRib(tRib->getRibTrie());
 
@@ -164,22 +167,22 @@ int main()
 	printf("Compress Time Consumption:    %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
 		
 		
-
+	//tFib->getFibTrieStatistic()->printInfor();
 	string updateFileName=updatefile+".txt";
 	updateFromFile(updateFileName,testCor);
 	
-	testCor->AccUpdate();
-	testCor->printUseTime();
-	//testCor->examineAlgorithm();
+	//testCor->AccUpdate();
+	//testCor->printUseTime();
+	testCor->examineAlgorithm();
 	
 	cout<<endl;
 	tRib->getRibTrieStatistic()->printInfor();
 	tFib->getFibTrieStatistic()->printInfor();
 	cout<<endl;
-#if STATISTICS_PERFORMANCE
-	tFib->getUpdateStatistics()->printInfor();
-	testCor->printInfor();
-#endif
+	#if STATISTICS_PERFORMANCE
+		tFib->getUpdateStatistics()->printInfor();
+		testCor->printInfor();
+	#endif
 	
 
 	delete tRib;

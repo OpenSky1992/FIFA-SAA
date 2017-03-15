@@ -1,6 +1,12 @@
 #include "Fib.h"
 
-
+/*
+run speed compare:
+first:		bitmapExist
+second:		bitmapSelect,	bitmapEqual
+third:		bitmapCopy,		bitmapInitial
+forth:		bitMerge
+*/
 bool Fib::bitmapMerge(BitMap bm1,BitMap bm2,BitMap res)
 {
 	bool intersection=false;

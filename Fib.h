@@ -18,7 +18,8 @@ public:
 	//bool EqualNextHopSet(NextHop *pNextA,NextHop *pNextB);
 	bool bitmapEqual(BitMap bm1,BitMap bm2);
 	void bitmapInitial(BitMap bm1,unsigned int index);
-	unsigned int bitmapSelect(BitMap bm1);
+	void bitmapCopy(BitMap dest,BitMap src);
+	
 	unsigned int BitmapCapacity;
 	
 	FibTrie* getFibTrie();
@@ -74,10 +75,10 @@ private:
 	std::hash_map<long long,int> m_mStandardInverse;
 	
 	void bitmapPrepare();
-	
+	unsigned int bitmapSelect(BitMap bm1);
 	bool bitmapMerge(BitMap bm1,BitMap bm2,BitMap res);
 	bool bitmapExist(unsigned int index,BitMap bm1);
-	void bitmapCopy(BitMap dest,BitMap src);
+	//void bitmapCopy(BitMap dest,BitMap src);
 	
 };
 

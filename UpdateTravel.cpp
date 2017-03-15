@@ -30,17 +30,16 @@ void UpdateTravel::Update(UpdatePara *para)
 {
 	if(para->operate==UPDATE_ANNOUNCE)
 	{
-#if STATISTICS_PERFORMANCE
-		m_pTotalStat->announceNum++;
-#endif
-
+		#if STATISTICS_PERFORMANCE
+			m_pTotalStat->announceNum++;
+		#endif
 		announceTravel(para->path,para->nextHop);
 	}
 	else
 	{
-#if STATISTICS_PERFORMANCE
-		m_pTotalStat->withdrawNum++;
-#endif
+		#if STATISTICS_PERFORMANCE
+			m_pTotalStat->withdrawNum++;
+		#endif
 		withdrawTravel(para->path);
 	}
 }
@@ -53,7 +52,6 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 	FibTrie *pLastVisit=insertNodeFib;
 	FibTrie *pNTrie,*pCounterTrie;
 	int default_oldport=DEFAULTHOP;
-	int bitmapSelectNumber;
 	int outDeep=0;
 	int travelLen=(int)strlen(travelPath);
 	int indexOfNextHop=m_pAllNHS->existNextHop(iNextHop);
@@ -79,8 +77,7 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 				pFibTrie->CreateNewNode(pCounterTrie);
 				insertNodeFib->pRightChild=pCounterTrie;
 				pCounterTrie->pParent=insertNodeFib;
-				bitmapSelectNumber=pFibTrie->bitmapSelect(pLastVisit->pNextHop);
-				pFibTrie->bitmapInitial(pCounterTrie->pNextHop,bitmapSelectNumber);
+				pFibTrie->bitmapCopy(pCounterTrie->pNextHop,pLastVisit->pNextHop);
 				pCounterTrie->intersection=true;
 				outDeep++;
 				
@@ -112,9 +109,7 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 				pFibTrie->CreateNewNode(pCounterTrie);
 				insertNodeFib->pLeftChild=pCounterTrie;
 				pCounterTrie->pParent=insertNodeFib;
-				bitmapSelectNumber=pFibTrie->bitmapSelect(pLastVisit->pNextHop);
-				pFibTrie->bitmapInitial(pCounterTrie->pNextHop,bitmapSelectNumber);
-				//->iVal=pLastVisit->pNextHop->iVal;
+				pFibTrie->bitmapCopy(pCounterTrie->pNextHop,pLastVisit->pNextHop);
 				pCounterTrie->intersection=true;
 				outDeep++;
 
@@ -143,9 +138,9 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 	m_pAnnounce->inheritHop=default_oldport;
 	if (insertNodeRib->iNextHop==indexOfNextHop)
 	{
-#if STATISTICS_PERFORMANCE
-		m_pTotalStat->A_invalid++;
-#endif
+		#if STATISTICS_PERFORMANCE
+			m_pTotalStat->A_invalid++;
+		#endif
 		return ;
 	}
 	if(insertNodeRib->pLeftChild==NULL&&insertNodeRib->pRightChild==NULL)
@@ -184,9 +179,9 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 		{
 			if (NULL==pLastVisitRib->pLeftChild)
 			{
-#if STATISTICS_PERFORMANCE
-				m_pTotalStat->W_invalid++;
-#endif
+				#if STATISTICS_PERFORMANCE
+					m_pTotalStat->W_invalid++;
+				#endif
 				return ;
 			}
 			pLastVisitRib=pLastVisitRib->pLeftChild;
@@ -196,9 +191,9 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 		{
 			if(NULL==pLastVisitRib->pRightChild)
 			{
-#if STATISTICS_PERFORMANCE
-				m_pTotalStat->W_invalid++;
-#endif
+				#if STATISTICS_PERFORMANCE
+					m_pTotalStat->W_invalid++;
+				#endif
 				return ;
 			}
 			pLastVisitRib=pLastVisitRib->pRightChild;
@@ -211,9 +206,9 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 
 	if (EMPTYHOP==pLastVisitRib->iNextHop)//invalid delete operation
 	{
-#if STATISTICS_PERFORMANCE
-		m_pTotalStat->W_invalid++;
-#endif
+		#if STATISTICS_PERFORMANCE
+			m_pTotalStat->W_invalid++;
+		#endif
 		return ;
 	}
 	m_pWithdraw->inheritHop=default_oldport;

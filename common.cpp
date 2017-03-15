@@ -96,7 +96,7 @@ void FibTrieStatistic::reset()
 	prefixNum=0;
 	totalNodeNum=0;
 	nonRouteNum=0;
-	totalNextHopNum=0;
+	//totalNextHopNum=0;
 }
 
 void FibTrieStatistic::printInfor()
@@ -104,5 +104,5 @@ void FibTrieStatistic::printInfor()
 	cout<<"Fib:prefix number:            "<<prefixNum<<endl;
 	cout<<"Fib:total node number:        "<<totalNodeNum<<endl;
 	cout<<"Fib:non-route prefix number:  "<<nonRouteNum<<endl;
-	cout<<"Fib:total nexthop number:     "<<totalNextHopNum<<endl;
+	//cout<<"Fib:total nexthop number:     "<<totalNextHopNum<<endl;
 }

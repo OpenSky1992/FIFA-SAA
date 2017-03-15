@@ -102,7 +102,6 @@ void Fib::CreateNewNode(FibTrie* &pTrie)
 {
 	
 	pTrie= new FibTrie();
-
 	if (NULL==pTrie)
 	{
 		std::cout<<"new object fail, exit!"<<std::endl;
@@ -116,10 +115,6 @@ void Fib::CreateNewNode(FibTrie* &pTrie)
 	pTrie->intersection=false;
 	pTrie->is_NNC_area=false;
 
-	/*
-	pNHop->iVal = EMPTYHOP;
-	pNHop->pNext = NULL;
-	pTrie->pNextHop = pNHop;*/
 }
 
 int Fib::GetAncestorHop(FibTrie* pTrie)
