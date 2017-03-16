@@ -3,3 +3,5 @@
 Debug/
 Release/
 *.vcxproj
+build/
+CMakeLists.txt*
