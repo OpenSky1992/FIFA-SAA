@@ -10,12 +10,13 @@
 #define		BITMAPLENGTH			1							//this number n represent the size of bitmap,how many long long can represent this bitmap
 //the BITMAPLENGTH more big,this program costumes more memeory and more time to run(more slow),so we must keep this number more small (restrict condition:BITMAPLENGTH>=1)
 #define		LONGLONG_SIZE			(8*sizeof(long long))
+#define 	PERFORMANCE_BUFFER_SIZE		100
 
 					
 #include <iostream>
 #include <iomanip>
 #include <string>
-#include <hash_map>
+#include <unordered_map>
 #include <cstdlib>
 
 
@@ -61,7 +62,7 @@ struct RibTrie
 struct UpdatePara
 {
 	int					nextHop;				//update parameter nexthop 
-	char				path[PREFIX_LEN];		//update para
+	char				path[PREFIX_LEN+1];		//update para 
 	char				operate;				
 };
 

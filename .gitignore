@@ -1,7 +1,8 @@
 *.txt
+!CMakeLists.txt
 *.vcxproj.*
 Debug/
 Release/
 *.vcxproj
-build/
-CMakeLists.txt*
+*~
+Data/

@@ -1,13 +1,10 @@
-#pragma once
 #include "Fib.h"
 #include "Rib.h"
 #include "TestCorrect.h"
 #include "Performance.h"
 
-#include <windows.h>
-#include <time.h>
-#include <conio.h>
 #include <fstream>
+#include<sys/time.h>
 
 using namespace std;
 
@@ -92,10 +89,18 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 				else 
 					parameter.path[yi]='0';
 			}
+			
+			/*if(readlines>2020)
+			{
+				cout<<"wrong line numbers:"<<readlines<<endl;
+				cout<<parameter.path<<endl;
+			}*/
+			
 			test->updateParameter(&parameter);
 
 			if(readlines%1000000==0)
 				cout<<"updates line numbers:"<<readlines<<endl;
+			
 
 			//if(readlines%1000==0)
 			//{
@@ -121,9 +126,10 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 int main()
 {
 	bool ipFormat=true;
-	string ribFile="getFromRib.txt";
-	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_mid";
+	string directory="../Data/";
+	string ribFile=directory+"getFromRib.txt";
+	string ribFileIP=directory+"rib2_ip.txt";
+	string updatefile=directory+"update_short";
 	
 	/*
 	//cout<<"size of FibTrieKKKKK:"<<sizeof(FibTrieKKKKK)<<endl;
@@ -139,16 +145,15 @@ int main()
 	Fib *tFib=new Fib();
 	Performance *testCor=new Performance(tRib,tFib);
 
-	LARGE_INTEGER frequence,privious,privious1;
-	if(!QueryPerformanceFrequency(&frequence))return 0;
+	struct  timeval  start,end;
 
 	if(ipFormat)
 	{
 		cout<<"read from file:"<<ribFile<<endl;
-		QueryPerformanceCounter(&privious); 
+		gettimeofday(&start,NULL); 
 		tRib->BuildRibFromFile(ribFile);
-		QueryPerformanceCounter(&privious1);
-		printf("read from file time:          %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
+		gettimeofday(&end,NULL);
+		cout<<"read from file time:"<<(end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec)<<" microsecond"<<endl;
 	}
 	else
 	{
@@ -160,10 +165,10 @@ int main()
 	tFib->ConstructFromRib(tRib->getRibTrie());
 
 
-	QueryPerformanceCounter(&privious); 
+	gettimeofday(&start,NULL); 
 	tFib->Compress();
-	QueryPerformanceCounter(&privious1);
-	printf("Compress Time Consumption:    %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
+	gettimeofday(&end,NULL); 
+	cout<<"compressing time:"<<(end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec)<<" microsecond"<<endl;
 		
 		
 	//tFib->getFibTrieStatistic()->printInfor();

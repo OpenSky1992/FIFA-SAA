@@ -1,5 +1,8 @@
 #pragma once
 #include "TestModule.h"
+#include<sys/time.h>
+#include<string.h>
+
 
 class Performance :public TestModule
 {
@@ -14,7 +17,7 @@ public:
 	void AccUpdate();
 private:
 	int updateIndex;
-	UpdatePara bufferSet[100];
-	long long updateTimeUsed;
+	UpdatePara bufferSet[PERFORMANCE_BUFFER_SIZE];
+	long updateTimeUsed;
 };
 

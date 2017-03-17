@@ -1,10 +1,11 @@
 #pragma once
 #include "common.h"
+using namespace std;
 
 class AllNextHop
 {
 private:
-	std::hash_map<int,int> m_mNextList;
+	unordered_map<int,int> m_mNextList;
 public:
 	int existNextHop(int iVal);
 	int getSizeOfNHS();

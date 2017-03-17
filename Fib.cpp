@@ -1,8 +1,4 @@
-#pragma once 
 #include "Fib.h"
-
-#include <windows.h>
-#include <time.h>
 
 
 
@@ -211,17 +207,8 @@ void Fib::Compress()
 {
 	if(m_pTrie->iNewPort==EMPTYHOP)
 		m_pTrie->iNewPort=DEFAULTHOP;
-	
-	//LARGE_INTEGER frequence,privious,privious1;
-	//if(!QueryPerformanceFrequency(&frequence))	return ;
-	//QueryPerformanceCounter(&privious); 
 	PassOneTwo(m_pTrie);
-	//QueryPerformanceCounter(&privious1);
-	//printf("pass one and two:             %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
-
 	PassThree(m_pTrie,BitmapCapacity);  //
-	//QueryPerformanceCounter(&privious);
-	//printf("pass three:                   %d microsecond\n",1000000*(privious.QuadPart-privious1.QuadPart)/frequence.QuadPart);
 }
 
 void Fib::FreeSubTree(FibTrie *FreeNode)

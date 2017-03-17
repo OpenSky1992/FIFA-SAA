@@ -1,6 +1,8 @@
 #pragma once
 #include "common.h"
 
+using namespace std;
+
 class Fib
 {
 public:
@@ -73,7 +75,7 @@ private:
 
 	//BitMap function
 	long long m_iStandardBitmap[LONGLONG_SIZE];
-	std::hash_map<long long,int> m_mStandardInverse;
+	unordered_map<long long,int> m_mStandardInverse;
 	
 	void bitmapPrepare();
 	unsigned int bitmapSelect(BitMap bm1);

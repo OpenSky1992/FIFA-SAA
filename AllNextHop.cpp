@@ -1,4 +1,3 @@
-#pragma once
 #include "AllNextHop.h"
 
 
@@ -11,7 +10,7 @@ AllNextHop::AllNextHop(void)
 int AllNextHop::existNextHop(int iVal)
 {
 	int length;
-	std::hash_map<int,int>::iterator it=m_mNextList.find(iVal);
+	unordered_map<int,int>::iterator it=m_mNextList.find(iVal);
 	if(it==m_mNextList.end())
 	{
 		length=m_mNextList.size();
