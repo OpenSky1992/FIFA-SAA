@@ -124,7 +124,7 @@ int main()
 	bool ipFormat=true;
 	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_mid";
+	string updatefile="update_short";
 	
 		/*
 	cout<<"size of int:"<<sizeof(int)<<endl;

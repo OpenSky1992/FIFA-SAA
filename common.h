@@ -6,8 +6,9 @@
 #define		UPDATE_WITHDRAW			'W'							//withdraw character
 #define		UPDATE_ANNOUNCE			'A'							//announce character
 #define		PREFIX_LEN				32							//the length of ip prefix
-#define		STATISTICS_PERFORMANCE  0							//0:no statist information about update
+#define		STATISTICS_PERFORMANCE  1							//0:no statist information about update
 																//make the program better performance,fast run.
+#define     PERFORMANCE_BUFFER_SIZE 100
 					
 #include <iostream>
 #include <string>
@@ -44,7 +45,7 @@ struct RibTrie
 struct UpdatePara
 {
 	int					nextHop;				//update parameter nexthop 
-	char				path[PREFIX_LEN];		//update para
+	char				path[PREFIX_LEN+1];		//update para
 	char				operate;				
 };
 
