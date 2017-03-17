@@ -1,0 +1,68 @@
+#!/bin/bash
+startYear=$1
+startMonth=$2
+endYear=`date +%Y`
+endMonth=`date +%m`
+#echo $startYear $startMonth $endYear $endMonth
+
+showMonth()
+{
+	if [[ $1 -lt 10 ]] 
+	then
+		echo 0$1
+	else
+		echo $1
+	fi
+}
+
+showMyTime()
+{
+	echo -n "cd "$1.
+	showMonth $2
+	echo "cd UPDATES"
+	echo "mget *"
+	echo "cd .."
+}
+
+
+echo "open archive.routeviews.org"
+echo "user anonymous 1@2.com"
+echo "prompt"
+echo "lcd ~/Documents/FIFA_Data"
+echo "cd bgpdata"
+
+if [[ startYear -eq endYear ]]
+then 
+	if [[ startMonth -le endMonth ]]
+	then
+		for((month=startMonth;month<=endMonth;month++))
+		do
+			showMyTime $startYear $month
+		done
+	fi	
+elif [[ startYear -lt endYear ]]
+then
+	for((year=startYear;year<=endYear;year++))
+	do
+		if [[ year -eq startYear ]]
+		then
+			for((month=startMonth;month<=12;month++))
+			do
+				showMyTime $year $month
+			done
+		elif [[ year -lt endYear ]]
+		then
+			for((month=01;month<=12;month++))
+			do
+				showMyTime $year $month
+			done
+		else
+			for((month=01;month<=endMonth;month++))
+			do
+				showMyTime $year $month
+			done
+		fi
+	done
+fi
+
+

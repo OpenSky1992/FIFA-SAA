@@ -1,0 +1,25 @@
+#!/bin/bash
+echo $PATH
+cd ..
+curDir=$(pwd)
+absDir=$curDir/SourceUpdates
+echo $absDir
+if [ -d $absDir ]  #check directory exist
+then
+	cd ./SourceUpdates
+	for name in $(ls) 
+	do
+		#echo $name
+		afterName=${name%.bz2}
+		#echo $afterName
+		readName=${afterName}_read
+		#echo $readName
+		bzip2 -dk $name
+		bgpdump -O $readName $afterName
+		../test/getInfoFromUpdates $readName ../Updates/update.txt
+		rm $readName
+		rm $afterName
+	done
+else
+	echo "../SourceUpdates is not exist."
+fi
