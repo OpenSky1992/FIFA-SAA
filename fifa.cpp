@@ -1,4 +1,3 @@
-#pragma once
 #include "Fib.h"
 #include "Rib.h"
 #include "TestCorrect.h"
@@ -123,7 +122,7 @@ int main()
 	bool ipFormat=true;
 	string ribFile="getFromRib.txt";
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_mid";
+	string updatefile="update_big";
 	
 	/*
 	//cout<<"size of FibTrieKKKKK:"<<sizeof(FibTrieKKKKK)<<endl;
@@ -141,6 +140,7 @@ int main()
 
 	LARGE_INTEGER frequence,privious,privious1;
 	if(!QueryPerformanceFrequency(&frequence))return 0;
+	cout<<"frequence:"<<frequence.QuadPart<<endl;
 
 	if(ipFormat)
 	{
@@ -175,8 +175,8 @@ int main()
 	//testCor->examineAlgorithm();
 	
 	cout<<endl;
-	tRib->getRibTrieStatistic()->printInfor();
-	tFib->getFibTrieStatistic()->printInfor();
+	//tRib->getRibTrieStatistic()->printInfor();
+	//tFib->getFibTrieStatistic()->printInfor();
 	cout<<endl;
 	#if STATISTICS_PERFORMANCE
 		testCor->printInfor();

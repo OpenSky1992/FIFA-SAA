@@ -14,7 +14,7 @@ public:
 	void AccUpdate();
 private:
 	int updateIndex;
-	UpdatePara bufferSet[100];
+	UpdatePara bufferSet[PERFORMANCE_BUFFER_SIZE];
 	long long updateTimeUsed;
 };
 

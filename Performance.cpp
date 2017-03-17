@@ -1,4 +1,3 @@
-#pragma once 
 #include "Performance.h"
 #include <windows.h>
 #include <time.h>
@@ -11,12 +10,13 @@ void Performance::printUseTime()
 
 void Performance::updateParameter(UpdatePara *para)
 {
+	if(updateIndex==PERFORMANCE_BUFFER_SIZE)
+		AccUpdate();
 	bufferSet[updateIndex].nextHop=para->nextHop;
 	bufferSet[updateIndex].operate=para->operate;
 	strcpy(bufferSet[updateIndex].path,para->path);
 	updateIndex++;
-	if(updateIndex==100)
-		AccUpdate();
+
 }
 
 void Performance::AccUpdate()

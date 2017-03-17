@@ -1,4 +1,3 @@
-#pragma once 
 #include "Fib.h"
 
 #include <windows.h>
