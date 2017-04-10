@@ -120,9 +120,10 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 int main()
 {
 	bool ipFormat=true;
-	string ribFile="getFromRib.txt";
+	string ribFile;
 	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_big";
+	string updatefile;
+	string virtualNodeFile="virtualNode.txt";
 	
 	/*
 	//cout<<"size of FibTrieKKKKK:"<<sizeof(FibTrieKKKKK)<<endl;
@@ -134,6 +135,10 @@ int main()
 	cout<<"size of FibTrie:"<<sizeof(FibTrie )<<endl;
 	cout<<"size of UpdateTotalStatistic:"<<sizeof(UpdateTotalStatistic)<<endl;*/
 	
+	cout<<"Please input original Rib file:";
+	cin>>ribFile;
+	ribFile=ribFile+".txt";
+
 	Rib *tRib=new Rib();
 	Fib *tFib=new Fib();
 	Performance *testCor=new Performance(tRib,tFib);
@@ -164,8 +169,9 @@ int main()
 	tFib->Compress();
 	QueryPerformanceCounter(&privious1);
 	printf("Compress Time Consumption:    %d microsecond\n",1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart);
-		
-		
+	
+	cout<<endl<<"Please input update files:";
+	cin>>updatefile;	
 	//tFib->getFibTrieStatistic()->printInfor();
 	string updateFileName=updatefile+".txt";
 	updateFromFile(updateFileName,testCor);
@@ -175,12 +181,13 @@ int main()
 	//testCor->examineAlgorithm();
 	
 	cout<<endl;
-	//tRib->getRibTrieStatistic()->printInfor();
-	//tFib->getFibTrieStatistic()->printInfor();
+	tRib->getRibTrieStatistic()->printInfor();
+	tFib->getFibTrieStatistic()->printInfor();
 	cout<<endl;
 	#if STATISTICS_PERFORMANCE
 		testCor->printInfor();
 		tFib->getUpdateStatistics()->printInfor();
+		tFib->printVirtNodeDistribution(virtualNodeFile);
 	#endif
 	
 	delete testCor;

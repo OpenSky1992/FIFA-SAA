@@ -79,8 +79,8 @@ unsigned int Fib::bitmapSelect(BitMap bm1)
 		}
 		else
 		{
-			std::hash_map<long long,int>::iterator it=m_mStandardInverse.find(bm1[i] & (-bm1[i]));
-			return section*LONGLONG_SIZE+(it->second);
+			//std::hash_map<long long,int>::iterator it=m_mStandardInverse.find(bm1[i] & (-bm1[i]));
+			return section*LONGLONG_SIZE+m_mStandardInverse[bm1[i] & (-bm1[i])];
 		}
 	}
 }

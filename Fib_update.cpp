@@ -61,7 +61,8 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 				return ;
 			}
 		pLastRib->iNextHop=EMPTYHOP;
-		if(updateGoDown_Merge(pLastRib,pLastFib,intNextHop))
+		int NumberVN=updateGoDown_Merge(pLastRib,pLastFib,intNextHop);
+		if(NumberVN==0)
 		{
 			pLastFib->is_NNC_area=false;
 			pLastRib->iNextHop=intNextHop;
@@ -70,6 +71,9 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 			#endif
 			return ;
 		}
+		#if STATISTICS_PERFORMANCE
+			m_mNumOfVirtualNode[NumberVN]++;
+		#endif
 		pLastRib->iNextHop=intNextHop;
 	}
 	#if STATISTICS_PERFORMANCE
@@ -135,7 +139,8 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 				#endif
 				return ;
 			}
-		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
+		int NumberVN=updateGoDown_Merge(pLastRib,pLastFib,inherit);
+		if(NumberVN==0)
 		{
 			pLastFib->is_NNC_area=false;
 			#if STATISTICS_PERFORMANCE
@@ -143,6 +148,9 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 			#endif
 			return ;
 		}
+		#if STATISTICS_PERFORMANCE
+			m_mNumOfVirtualNode[NumberVN]++;
+		#endif
 	}
 	#if STATISTICS_PERFORMANCE
 		m_pUpdateStat->W_select++;
@@ -249,47 +257,30 @@ void Fib::update_select(FibTrie *pFib,unsigned int oldHop,unsigned int newHop)
 //this function only for those node is No-Leaf node
 //this funciont can find the node that it is NULL in Rib trie but counterNode in Fib trie is not NULL
 //and correct this nodes' nexthop set.
-bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
+int Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 {
+	if(pRib==NULL)
+	{
+		bitmapInitial(pFib->pNextHop,inheritHop);
+		return 1;
+	}
 	if(pRib->iNextHop!=EMPTYHOP)
 	{
 		pFib->is_NNC_area=true;
-		return true;
+		return 0;
 	}
-	if(pRib->pLeftChild==NULL&&pRib->pRightChild!=NULL)
-	{
-		bitmapInitial(pFib->pLeftChild->pNextHop,inheritHop);
-		updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
+	int leftReturn=updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
+	int rightReturn=updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
+	int newReturn=leftReturn + rightReturn;
+	if(newReturn==0)
+	{//is_NCC_area of the most top no change node is set true,other node must recover to false
+		pFib->pLeftChild->is_NNC_area=false;
+		pFib->pRightChild->is_NNC_area=false;
+		pFib->is_NNC_area=true;//no change,no merge
+	}
+	else//some nexthop set change,so must merge
 		NextHopMerge(pFib);
-		return false;
-	}
-	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild==NULL)
-	{
-		bitmapInitial(pFib->pRightChild->pNextHop,inheritHop);
-		updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
-		NextHopMerge(pFib);
-		return false;
-	}
-	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild!=NULL)
-	{
-		bool leftReturn=updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
-		bool rightReturn=updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
-		bool newReturn=leftReturn&&rightReturn;
-		if(newReturn)
-		{//is_NCC_area of the most top no change node is set true,other node must recover to false
-			pFib->pLeftChild->is_NNC_area=false;
-			pFib->pRightChild->is_NNC_area=false;
-			pFib->is_NNC_area=true;//no change,no merge
-		}
-		else//some nexthop set change,so must merge
-			NextHopMerge(pFib);
-		return newReturn;
-	}
-	else
-	{//this is the same effect in the first if_statement.because Leaf node must have label
-		pFib->is_NNC_area=true;
-		return true;
-	}
+	return newReturn;
 }
 
 void Fib::NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop)

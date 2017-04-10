@@ -1,6 +1,5 @@
 #include "Rib.h"
-#include <iostream>
-#include <fstream>
+
 
 Rib::Rib(void)
 {

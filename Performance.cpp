@@ -16,7 +16,6 @@ void Performance::updateParameter(UpdatePara *para)
 	bufferSet[updateIndex].operate=para->operate;
 	strcpy(bufferSet[updateIndex].path,para->path);
 	updateIndex++;
-
 }
 
 void Performance::AccUpdate()

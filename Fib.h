@@ -1,5 +1,6 @@
 #pragma once
 #include "common.h"
+using namespace std;
 
 class Fib
 {
@@ -25,6 +26,7 @@ public:
 	FibTrie* getFibTrie();
 	UpdateFibStatistic* getUpdateStatistics();
 	FibTrieStatistic* getFibTrieStatistic();
+	void printVirtNodeDistribution(string file);
 
 private:
 	//Data fib trie
@@ -35,15 +37,11 @@ private:
 	
 	void CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie);
 	int GetAncestorHop(FibTrie* pTrie);  //this function only be called by function compress,it is obselete for update processing
-
 	void PassOneTwo(FibTrie *pTrie);    //this function only be called by function compress
 	void PassThree(FibTrie *pTrie,unsigned int inheritHop);
 
 	//auxilary function
 	void FreeSubTree(FibTrie *FreeNode);
-	//bool ifcontainFunc(int inheritHop,NextHop *ptmp);
-	//void freeNextHopSet(NextHop *ptmp);
-	//NextHop* CopyNextHopSet(NextHop *ptmp);
 	void NextHopMerge(FibTrie *pTrie);
 	unsigned int priority_select(unsigned int oldSelect,unsigned int oldInherit,BitMap ptmp);
 	void prefixNumTravel(FibTrie *pTrie);
@@ -55,9 +53,8 @@ private:
 	FibTrie* lastVisitWithdraw(char *travel);
 
 	
-	
 	//update function
-	bool updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
+	int updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop);
 	
 	//least change select
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
@@ -69,7 +66,7 @@ private:
 	FibTrie* withdrawLeaf(FibTrie *pFib,int upLevel);
 
 
-
+	std::hash_map<int,int> m_mNumOfVirtualNode;
 
 	//BitMap function
 	long long m_iStandardBitmap[LONGLONG_SIZE];

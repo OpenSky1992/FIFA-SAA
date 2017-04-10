@@ -18,6 +18,7 @@
 #include <string>
 #include <hash_map>
 #include <cstdlib>
+#include <fstream>
 
 
 typedef long long BitMap[BITMAPLENGTH];

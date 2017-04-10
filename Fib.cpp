@@ -5,6 +5,8 @@
 
 
 
+
+
 Fib::Fib(void)
 {
 	CreateNewNode(m_pTrie);
@@ -18,6 +20,7 @@ Fib::~Fib(void)
 	FreeSubTree(m_pTrie);
 	delete m_pUpdateStat;
 	delete m_pFibTrieStat;
+	m_mStandardInverse.clear();
 }
 
 FibTrie* Fib::getFibTrie()
@@ -134,11 +137,13 @@ int Fib::GetAncestorHop(FibTrie* pTrie)
 void Fib::PassOneTwo(FibTrie *pTrie)
 {
 	FibTrie* pNTrie;      //creat a new node
-
-	if(pTrie->pLeftChild==NULL && pTrie->pRightChild!=NULL)
+	if(pTrie->pLeftChild==NULL&&pTrie->pRightChild==NULL)
 	{
-		PassOneTwo(pTrie->pRightChild);
-
+		pTrie->intersection=true;
+		return ;
+	}
+	if(pTrie->pLeftChild==NULL)	
+	{
 		CreateNewNode(pNTrie);
 		pNTrie->pParent=pTrie;
 		if(pTrie->iNewPort==EMPTYHOP)
@@ -147,13 +152,11 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 			bitmapInitial(pNTrie->pNextHop,pTrie->iNewPort);
 		pNTrie->intersection=true;
 		pTrie->pLeftChild=pNTrie;
-
-		NextHopMerge(pTrie);
 	}
-	else if(pTrie->pLeftChild!=NULL && pTrie->pRightChild==NULL)
-	{
+	else
 		PassOneTwo(pTrie->pLeftChild);
-		
+	if(pTrie->pRightChild==NULL)
+	{
 		CreateNewNode(pNTrie);
 		pNTrie->pParent=pTrie;
 		if(pTrie->iNewPort==EMPTYHOP)
@@ -162,20 +165,10 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 			bitmapInitial(pNTrie->pNextHop,pTrie->iNewPort);
 		pNTrie->intersection=true;
 		pTrie->pRightChild=pNTrie;
-
-		NextHopMerge(pTrie);
-	}
-	else if (pTrie->pLeftChild!=NULL && pTrie->pRightChild!=NULL)
-	{
-		PassOneTwo(pTrie->pLeftChild);
-		PassOneTwo(pTrie->pRightChild);
-		NextHopMerge(pTrie);
 	}
 	else
-	{
-		pTrie->intersection=true;
-		return ;
-	}
+		PassOneTwo(pTrie->pRightChild);
+	NextHopMerge(pTrie);
 }
 
 void Fib::NextHopMerge(FibTrie *pTrie)
@@ -234,3 +227,16 @@ void Fib::FreeSubTree(FibTrie *FreeNode)
 	delete FreeNode;
 }
 
+
+void Fib::printVirtNodeDistribution(string file)
+{
+	ofstream fout(file.c_str());
+	hash_map<int,int>::iterator it;
+	for(it=m_mNumOfVirtualNode.begin();it!=m_mNumOfVirtualNode.end();++it)
+	{
+		fout<<setw(6)<<it->first<<" ";
+		fout<<setw(6)<<it->second<<endl;
+	}
+	fout<<flush;
+	fout.close();
+}

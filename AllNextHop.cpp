@@ -1,10 +1,9 @@
 #include "AllNextHop.h"
 
 
-
 AllNextHop::AllNextHop(void)
 {
-	m_mNextList[0]=0;//very import,because 0 represent default hop in our hash_map
+	m_mNextList[0]=0;//very important,because 0 represent default hop in our hash_map
 }
 
 int AllNextHop::existNextHop(int iVal)
