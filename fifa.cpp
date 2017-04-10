@@ -127,9 +127,9 @@ int main()
 {
 	bool ipFormat=true;
 	string directory="../Data/";
-	string ribFile=directory+"getFromRib.txt";
+	string ribFile;
 	string ribFileIP=directory+"rib2_ip.txt";
-	string updatefile=directory+"update_short";
+	string updatefile;
 	
 	/*
 	//cout<<"size of FibTrieKKKKK:"<<sizeof(FibTrieKKKKK)<<endl;
@@ -140,6 +140,10 @@ int main()
 	cout<<"size of RibTrie:"<<sizeof(RibTrie )<<endl;
 	cout<<"size of FibTrie:"<<sizeof(FibTrie )<<endl;
 	cout<<"size of UpdateTotalStatistic:"<<sizeof(UpdateTotalStatistic)<<endl;*/
+	
+	cout<<"Please input original Rib file:";
+	cin>>ribFile;
+	ribFile=directory+ribFile+".txt";
 	
 	Rib *tRib=new Rib();
 	Fib *tFib=new Fib();
@@ -170,9 +174,10 @@ int main()
 	gettimeofday(&end,NULL); 
 	cout<<"compressing time:"<<(end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec)<<" microsecond"<<endl;
 		
-		
+	cout<<endl<<"Please input update file:";	
+	cin>>updatefile;
 	//tFib->getFibTrieStatistic()->printInfor();
-	string updateFileName=updatefile+".txt";
+	string updateFileName=directory+updatefile+".txt";
 	updateFromFile(updateFileName,testCor);
 	
 	testCor->AccUpdate();

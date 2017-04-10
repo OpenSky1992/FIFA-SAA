@@ -1,7 +1,5 @@
 *.txt
 !CMakeLists.txt
-*.vcxproj.*
-Debug/
 Release/
 *.vcxproj
 *~

@@ -1,0 +1,11 @@
+digraph G{
+	TestModule -> UpdateTravel
+	TestModule -> pRib [style=dotted]
+	TestModule -> pFib [style=dotted]
+	UpdateTravel ->pRib [style=dotted]
+	UpdateTravel ->pFib [style=dotted]
+	UpdateTravel -> AllNextHopSet[style=dotted]
+	UpdateTravel -> {AnnounceInfo,WithdrawInfo,UpdateTotalStatistic}
+	pRib -> {RibTrieStatistic,AllNextHopSet}
+	pFib -> {FibTrieStatistic,UpdateFibStatistic}
+}

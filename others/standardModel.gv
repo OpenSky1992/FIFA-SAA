@@ -1,0 +1,6 @@
+digraph standardModel{
+	commonSelect->{standardSelect,doubleSearch,search}
+	doubleSearch->standardSelect
+	doubleSearch->search
+	standardSelect->doubleSearch
+}
