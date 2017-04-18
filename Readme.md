@@ -1,8 +1,8 @@
 download data method:
+
 autoDown | ftp -n
 
-compile
-
-cd Release
-cmake -DCMAKE_BUILD_TYPE=Release ..
-make
+compile：
+1. cd Release
+2. cmake -DCMAKE_BUILD_TYPE=Release ..
+3. make
