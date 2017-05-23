@@ -1,5 +1,3 @@
-*.txt
-*.vcxproj.*
-Debug/
 Release/
-*.vcxproj
+*~
+Data/
