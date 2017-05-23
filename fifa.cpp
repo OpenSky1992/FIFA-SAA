@@ -174,7 +174,7 @@ int main()
 		
 
 	//tFib->getFibTrieStatistic()->printInfor();
-	string updateFileName=directory+updatefile+".txt";
+	string updateFileName=updatefile+".txt";
 	updateFromFile(updateFileName,testCor);
 	
 	testCor->AccUpdate();
