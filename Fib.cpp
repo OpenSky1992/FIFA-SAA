@@ -1,7 +1,5 @@
-#pragma once 
 #include "Fib.h"
 
-#include <windows.h>
 #include <time.h>
 
 

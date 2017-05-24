@@ -120,11 +120,11 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 
 int main()
 {
-	int pause;
 	bool ipFormat=true;
-	string ribFile="getFromRib.txt";
-	string ribFileIP="rib2_ip.txt";
-	string updatefile="update_short";
+	string directory="../Data/";
+	string ribFile=directory+"getFromRib.txt";
+	string ribFileIP=directory+"rib2_ip.txt";
+	string updatefile=directory+"update_short";
 	
 		/*
 	cout<<"size of int:"<<sizeof(int)<<endl;

@@ -1,7 +1,5 @@
-#pragma once 
 #include "Performance.h"
-#include <windows.h>
-#include <time.h>
+#include <sys/time.h>
 
 
 Performance::Performance(Rib *pRib,Fib *pFib)
