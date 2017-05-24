@@ -15,7 +15,7 @@ public:
 		pRibTrie=NULL;
 		pFibTrie=NULL;
 		delete pUpdate;
-	};
+	}
 	virtual void updateParameter(UpdatePara *para)=0;
 	void printInfor()
 	{

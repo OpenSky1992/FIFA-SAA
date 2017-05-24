@@ -4,7 +4,7 @@
 #include "Performance.h"
 
 #include <fstream>
-#include<sys/time.h>
+#include <sys/time.h>
 
 using namespace std;
 

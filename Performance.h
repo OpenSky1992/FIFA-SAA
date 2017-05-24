@@ -1,7 +1,7 @@
 #pragma once
 #include "TestModule.h"
-#include<sys/time.h>
-#include<string.h>
+#include <sys/time.h>
+#include <string.h>
 
 
 class Performance :public TestModule
