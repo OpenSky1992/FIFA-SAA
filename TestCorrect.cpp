@@ -1,16 +1,6 @@
 #include "TestCorrect.h"
 
-TestCorrect::TestCorrect(Rib *pRib,Fib *pFib)
-{
-	pRibTrie=pRib;
-	pFibTrie=pFib;
-	pUpdate=new UpdateTravel(pRib,pFib);
-}
 
-TestCorrect::~TestCorrect(void)
-{
-	delete pUpdate;
-}
 
 void TestCorrect::updateParameter(UpdatePara *para)
 {

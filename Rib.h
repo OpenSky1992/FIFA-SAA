@@ -1,6 +1,7 @@
 #pragma once
 #include "common.h"
 #include "AllNextHop.h"
+#include <memory.h>
 using namespace std;
 
 class Rib

@@ -1,11 +1,16 @@
 #pragma once
 #include "TestModule.h"
+#include <sys/time.h>
+#include <string.h>
 
 class Performance :public TestModule
 {
 public:
-	Performance(Rib *pRib,Fib *pFib);
-	~Performance(void);
+	Performance(Rib *pRib,Fib *pFib):TestModule(pRib,pFib)
+	{
+		updateIndex=0;
+		updateTimeUsed=0;
+	}
 	virtual void updateParameter(UpdatePara *para);
 	void printUseTime();
 	void AccUpdate();

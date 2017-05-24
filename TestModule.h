@@ -4,8 +4,18 @@
 class TestModule
 {
 public:
-	TestModule(){}
-	~TestModule(void){};
+	TestModule(Rib *pRib,Fib *pFib)
+	{
+		pRibTrie=pRib;
+		pFibTrie=pFib;
+		pUpdate=new UpdateTravel(pRib,pFib);
+	}
+	~TestModule(void)
+	{
+		pRibTrie=NULL;
+		pFibTrie=NULL;
+		delete pUpdate;
+	}
 	virtual void updateParameter(UpdatePara *para)=0;
 	void printInfor()
 	{

@@ -1,21 +1,5 @@
 #include "Performance.h"
-#include <sys/time.h>
 
-
-Performance::Performance(Rib *pRib,Fib *pFib)
-{
-	pRibTrie=pRib;
-	pFibTrie=pFib;
-	updateIndex=0;
-	updateTimeUsed=0;
-	pUpdate=new UpdateTravel(pRib,pFib);
-}
-
-
-Performance::~Performance(void)
-{
-	delete pUpdate;
-}
 
 void Performance::printUseTime()
 {
@@ -35,16 +19,15 @@ void Performance::updateParameter(UpdatePara *para)
 
 void Performance::AccUpdate()
 {
-	LARGE_INTEGER frequence,privious,privious1;
-	if(!QueryPerformanceFrequency(&frequence))
-		return ;
-	QueryPerformanceCounter(&privious); 
+	struct timeval start,end;
+	gettimeofday(&start,NULL);
 	for(int i=0;i<updateIndex;i++)
 	{
 		pUpdate->Update(bufferSet+i);
 	}
-	QueryPerformanceCounter(&privious1);
-	updateTimeUsed=updateTimeUsed+1000000*(privious1.QuadPart-privious.QuadPart)/frequence.QuadPart;
+	gettimeofday(&end,NULL);
+	
+	updateTimeUsed=updateTimeUsed+(end.tv_sec-start.tv_sec)*1000000+(end.tv_usec-start.tv_usec);
 	updateIndex=0;
 }
 
