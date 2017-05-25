@@ -108,7 +108,7 @@ public:
 	int		W_true_goDown;
 };
 
-class UpdateTotalStatistic
+class UpdateTotalStatistic:public StatisticModule
 {
 public:
 	UpdateTotalStatistic();
