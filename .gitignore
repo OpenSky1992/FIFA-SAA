@@ -1,3 +1,5 @@
 Release/
 *~
 Data/
+*\.vim
+others/
