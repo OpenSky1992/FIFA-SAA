@@ -1,7 +1,8 @@
 Release/
 Debug/
-*~
 Data/
+others/
+*~
 *\.vim
 *\.swp
 tags
