@@ -1,5 +1,7 @@
 Release/
-*~
+Debug/
 Data/
-*\.vim
 others/
+*~
+*\.vim
+tags
