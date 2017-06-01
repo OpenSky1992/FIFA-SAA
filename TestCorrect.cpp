@@ -54,7 +54,6 @@ bool TestCorrect::forwardCorrect(RibTrie *pRib,int inheritRib,FibTrie *pFib,int 
 
 bool TestCorrect::NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 {
-	//check is_NNC_area,pNextHop,intersection
 	//pTarget is update one by one 
 	//pFibSrc is compressed Fib trie from pRib that complete total update
 	if(pTarget->is_NNC_area)
@@ -70,9 +69,7 @@ bool TestCorrect::NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 		if(pFibSrc->pLeftChild!=NULL&&pFibSrc->pRightChild!=NULL)
 		{
 			bool NHS_result=pFibTrie->EqualNextHopSet(pFibSrc->pNextHop,pTarget->pNextHop);
-			bool inter_result=(pFibSrc->intersection==pTarget->intersection);
-			bool is_continue=NHS_result&&inter_result;
-			if(!is_continue)
+			if(!NHS_result)
 				return false;
 			bool leftResult=NHS_isCorrect(pFibSrc->pLeftChild,pTarget->pLeftChild);
 			bool RightResult=NHS_isCorrect(pFibSrc->pRightChild,pTarget->pRightChild);
@@ -82,8 +79,7 @@ bool TestCorrect::NHS_isCorrect(FibTrie *pFibSrc,FibTrie *pTarget)
 		{
 			if(pTarget->pLeftChild!=NULL||pTarget->pRightChild!=NULL)
 				return false;
-			bool NHS_reuslt=(pFibSrc->pNextHop->iVal==pTarget->pNextHop->iVal);
-			return NHS_reuslt&&pTarget->intersection;
+			return pFibSrc->pNextHop->iVal==pTarget->pNextHop->iVal;
 		}
 	}
 }

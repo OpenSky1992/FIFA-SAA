@@ -54,9 +54,7 @@ private:
 	
 	//least change select
 	void NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop);  //the partition NNC are that their nexthop set don't change, this is select processing for partition NNC
-	void NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop);  //the standard model for partition NNC
-	void NNC_SS_Double_search(FibTrie *pFib,int oldHop,int newHop);
-	FibTrie* NNC_SS_search(FibTrie *pFib,int iNextHop);
+	void RecursiveSelect(FibTrie *pFib,int &inheritOldHopFib,int &inheritNewHopFib);
 
 	//withdraw delete
 	FibTrie* withdrawLeaf(FibTrie *pFib,int upLevel);

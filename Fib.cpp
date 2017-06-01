@@ -103,7 +103,6 @@ void Fib::CopyTrieFromRib(RibTrie* pSrcTrie,FibTrie* pDesTrie)
 //creat a new FIB trie node
 void Fib::CreateNewNode(FibTrie* &pTrie)
 {
-	
 	pTrie= new FibTrie();
 	NextHop* pNHop =new NextHop();
 
@@ -117,8 +116,7 @@ void Fib::CreateNewNode(FibTrie* &pTrie)
 	pTrie->pLeftChild = NULL;
 	pTrie->pRightChild = NULL;
 	pTrie->iNewPort = EMPTYHOP;
-	pTrie->intersection=false;
-	pTrie->is_NNC_area=false;
+	pTrie->is_NNC_area=false;    	
 
 	pNHop->iVal = EMPTYHOP;
 	pNHop->pNext = NULL;
@@ -154,9 +152,7 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 			pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
 		else							   
 			pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
-		pNTrie->intersection=true;
 		pTrie->pLeftChild=pNTrie;
-
 		NextHopMerge(pTrie);
 	}
 	else if(pTrie->pLeftChild!=NULL && pTrie->pRightChild==NULL)
@@ -169,21 +165,17 @@ void Fib::PassOneTwo(FibTrie *pTrie)
 			pNTrie->pNextHop->iVal = GetAncestorHop(pTrie);
 		else						
 			pNTrie->pNextHop->iVal = pTrie->pNextHop->iVal;
-		pNTrie->intersection=true;
 		pTrie->pRightChild=pNTrie;
-
 		NextHopMerge(pTrie);
 	}
 	else if (pTrie->pLeftChild!=NULL && pTrie->pRightChild!=NULL)
 	{
 		PassOneTwo(pTrie->pLeftChild);
 		PassOneTwo(pTrie->pRightChild);
-
 		NextHopMerge(pTrie);
 	}
 	else
 	{
-		pTrie->intersection=true;
 		return ;
 	}
 }
@@ -279,10 +271,7 @@ void Fib::NextHopMerge(FibTrie *pTrie)
 
 			pRNextHop = pRNextHop->pNext;
 		}while(pRNextHop!=NULL);
-		pTrie->intersection=false;
 	}
-	else
-		pTrie->intersection=true;
 }
 
 bool Fib::ifcontainFunc(int inheritHop,NextHop *ptmp)
@@ -317,15 +306,11 @@ void Fib::PassThree(FibTrie *pTrie,int inheritHop)
 	bool clear=true;
 	if (pTrie==NULL)
 		return;
-
-	if(pTrie->intersection)
+	if(!ifcontainFunc(inheritHop,pTrie->pNextHop))
 	{
-		if(!ifcontainFunc(inheritHop,pTrie->pNextHop))
-		{
-			pTrie->iNewPort=pTrie->pNextHop->iVal;
-			inheritHop=pTrie->pNextHop->iVal;
-			clear=false;
-		}
+		pTrie->iNewPort=pTrie->pNextHop->iVal;
+		inheritHop=pTrie->pNextHop->iVal;
+		clear=false;
 	}
 	if(clear)
 		pTrie->iNewPort=EMPTYHOP;

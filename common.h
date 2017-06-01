@@ -14,11 +14,12 @@
 #include <iomanip>
 #include <string>
 #include <unordered_map>
+#include <string.h>
 
 //The defination of linklist Nexhop
 struct NextHop{
 	NextHop*			pNext;					
-	int					iVal;					//the address of Nexthop£¬0 means empty
+	int					iVal;					//the address of Nexthop means empty
 };
 
 //node in FibTrie
@@ -28,8 +29,8 @@ struct FibTrie
 	FibTrie*			pLeftChild;				//point to left child
 	FibTrie*			pRightChild;			//point to right child
 	int					iNewPort;				//new port
-	bool				intersection;			//record intersection or union
-	bool				is_NNC_area;			//for update,NCC: Nexthop set No Change
+	//bool				intersection;			//record intersection or union
+	bool				is_NNC_area;			//for update,NNC: Nexthop set No Change
 	NextHop*			pNextHop;				//Nexthop set
 };
 
@@ -57,7 +58,6 @@ class WithdrawInfo
 {
 public:
 	bool				isLeaf;					//is leaf node
-	bool				isEmpty;				//only for non-terminal node
 	int					inheritHop;				//inherit hop
 	int					oldHop;					//old hop
 	int					outNumber;				//only for terminal node

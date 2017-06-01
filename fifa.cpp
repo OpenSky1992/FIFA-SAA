@@ -94,17 +94,17 @@ unsigned int updateFromFile(string sFileName,Performance *test)
 			if(readlines%1000000==0)
 				cout<<readlines/1000000<<endl;
 
-			//if(readlines==9664)
+			//if(readlines%10000==0)
 			//{
-				//if(!test->exammineOnebyOne())
-				//{
-				//	cout<<readlines<<":wrong"<<endl;
-				//	return readlines;
-				//}
-				//else
-				//{
-				//	cout<<readlines<<":correct"<<endl;	
-				//}
+			//	if(!test->exammineOnebyOne())
+			//	{
+			//		cout<<readlines<<":wrong"<<endl;
+			//		return readlines;
+			//	}
+			//	else
+			//	{
+			//		cout<<readlines<<":correct"<<endl;	
+			//	}
 			//}
 			//cout<<readlines<<endl;
 		}
@@ -167,11 +167,11 @@ int main()
 	//testCor->examineAlgorithm();
 	
 	cout<<endl;
-	tRib->getRibTrieStatistic()->printInfor();
-	tFib->getFibTrieStatistic()->printInfor();
+	//tRib->getRibTrieStatistic()->printInfor();
+	//tFib->getFibTrieStatistic()->printInfor();
 	cout<<endl;
 #if STATISTICS_PERFORMANCE
-	tFib->getUpdateStatistics()->printInfor();
+	//tFib->getUpdateStatistics()->printInfor();
 	testCor->printInfor();
 #endif
 	

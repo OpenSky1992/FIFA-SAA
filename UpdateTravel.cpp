@@ -66,7 +66,6 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 				insertNodeFib->pRightChild=pCounterTrie;
 				pCounterTrie->pParent=insertNodeFib;
 				pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
-				pCounterTrie->intersection=true;
 				outDeep++;
 				
 				pRibTrie->CreateNewNode(pNewRib);
@@ -98,7 +97,6 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 				insertNodeFib->pLeftChild=pCounterTrie;
 				pCounterTrie->pParent=insertNodeFib;
 				pCounterTrie->pNextHop->iVal=pLastVisit->pNextHop->iVal;
-				pCounterTrie->intersection=true;
 				outDeep++;
 
 				pRibTrie->CreateNewNode(pNewRib);
@@ -134,7 +132,7 @@ void UpdateTravel::announceTravel(char *travelPath,int iNextHop)
 	if(insertNodeRib->pLeftChild==NULL&&insertNodeRib->pRightChild==NULL)
 	{
 		m_pAnnounce->isLeaf=true;
-		m_pAnnounce->pLastRib=NULL;//Leaf node don't need this parameter
+		m_pAnnounce->pLastRib=NULL;
 	}
 	else
 	{
@@ -200,28 +198,20 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 		return ;
 	}
 	m_pWithdraw->inheritHop=default_oldport;
+	m_pWithdraw->oldHop=pLastVisitRib->iNextHop;
 	if (pLastVisitRib->pLeftChild==NULL&&pLastVisitRib->pRightChild==NULL)
 	{
 		m_pWithdraw->isLeaf=true;
-		m_pWithdraw->oldHop=pLastVisitRib->iNextHop;
 		m_pWithdraw->outNumber=pRibTrie->withdrawLeafNode(pLastVisitRib);
-		m_pWithdraw->pLastRib=NULL;  //Leaf node don't need this parameter
+		m_pWithdraw->pLastRib=NULL;
 	}
 	else
 	{
 		m_pWithdraw->isLeaf=false;
-		if(pLastVisitRib->iNextHop==EMPTYHOP)
-			m_pWithdraw->isEmpty=true;
-		else
-		{
-			m_pWithdraw->oldHop=pLastVisitRib->iNextHop;
-			m_pWithdraw->isEmpty=false;
-			pLastVisitRib->iNextHop=EMPTYHOP;
-		}
+		pLastVisitRib->iNextHop=EMPTYHOP;
 		m_pWithdraw->pLastRib=pLastVisitRib;
 	}
 	m_pWithdraw->pLastFib=pLastVisitFib;
-
 	pFibTrie->updateWithdraw(m_pWithdraw);
 }
 

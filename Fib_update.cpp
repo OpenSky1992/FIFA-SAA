@@ -72,8 +72,7 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 				insertNode->pNextHop->iVal=intNextHop;
 			break;
 		case 1:
-			insertNode->intersection=true;
-			insertNode->pNextHop->iVal=intNextHop;			//pLastFib->intersection=false;
+			insertNode->pNextHop->iVal=intNextHop;		
 			if(intNextHop==pLastFib->pNextHop->iVal)
 			{
 #if STATISTICS_PERFORMANCE
@@ -85,7 +84,6 @@ void Fib::updateAnnounce(AnnounceInfo *info)
 				PassOneTwo(pLastFib);//not only compute the nexthop set of the pLastFib,but also change the intersection(property) of the pLastFib 
 			break;
 		default:
-			insertNode->intersection=true;
 			insertNode->pNextHop->iVal=intNextHop;
 			PassOneTwo(pLastFib);//change the intersection(property) of the subTrie of pLastFib
 			if(intNextHop!=pLastFib->pNextHop->iVal)
@@ -177,14 +175,13 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 		RibTrie *pLastRib=info->pLastRib;
 		int inherit=info->inheritHop;
 
-		if(!info->isEmpty)
-			if(info->oldHop==inherit)
-			{
+		if(info->oldHop==inherit)
+		{
 #if STATISTICS_PERFORMANCE
-				m_pUpdateStat->W_inherit++;
+			m_pUpdateStat->W_inherit++;
 #endif
-				return ;
-			}
+			return ;
+		}
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
 		{
 			pLastFib->is_NNC_area=false;
@@ -260,21 +257,7 @@ void Fib::update_select(FibTrie *pFib,int oldHop,int newHop)
 	else
 	{
 		int inheritOldHopFib=oldHop,inheritNewHopFib=newHop;
-		bool clear=true;
-		if(pFib->iNewPort!=EMPTYHOP)
-			inheritOldHopFib=pFib->iNewPort;
-		if(pFib->intersection)
-		{
-			if(!ifcontainFunc(newHop,pFib->pNextHop))
-			{
-				int selectHop=priority_select(pFib->iNewPort,inheritOldHopFib,pFib->pNextHop);
-				pFib->iNewPort=selectHop;
-				inheritNewHopFib=selectHop;
-				clear=false;
-			}
-		}
-		if(clear)
-			pFib->iNewPort=EMPTYHOP;
+		RecursiveSelect(pFib,inheritOldHopFib,inheritNewHopFib);
 		update_select(pFib->pLeftChild,inheritOldHopFib,inheritNewHopFib);
 		update_select(pFib->pRightChild,inheritOldHopFib,inheritNewHopFib);
 	}
@@ -290,132 +273,60 @@ bool Fib::updateGoDown_Merge(RibTrie *pRib,FibTrie *pFib,int inheritHop)
 		pFib->is_NNC_area=true;
 		return true;
 	}
-	if(pRib->pLeftChild==NULL&&pRib->pRightChild!=NULL)
+	bool leftReturn,rightReturn,newReturn;
+	if(pRib->pLeftChild!=NULL)
+		leftReturn=updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
+	else
 	{
 		pFib->pLeftChild->pNextHop->iVal=inheritHop;
-		updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
-		NextHopMerge(pFib);
-		return false;
+		leftReturn=false;
 	}
-	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild==NULL)
+	if(pRib->pRightChild!=NULL)
+		rightReturn=updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
+	else
 	{
 		pFib->pRightChild->pNextHop->iVal=inheritHop;
-		updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
+		rightReturn=false;
+	}
+	newReturn=leftReturn&&rightReturn;
+	if(!newReturn)
 		NextHopMerge(pFib);
-		return false;
-	}
-	else if(pRib->pLeftChild!=NULL&&pRib->pRightChild!=NULL)
-	{
-		bool leftReturn=updateGoDown_Merge(pRib->pLeftChild,pFib->pLeftChild,inheritHop);
-		bool rightReturn=updateGoDown_Merge(pRib->pRightChild,pFib->pRightChild,inheritHop);
-		bool newReturn=leftReturn&&rightReturn;
-		if(newReturn)
-		{//is_NCC_area of the most top no change node is set true,other node must recover to false
-			pFib->pLeftChild->is_NNC_area=false;
-			pFib->pRightChild->is_NNC_area=false;
-			pFib->is_NNC_area=true;//no change,no merge
-		}
-		else//some nexthop set change,so must merge
-			NextHopMerge(pFib);
-		return newReturn;
-	}
 	else
-	{//this is the same effect in the first if_statement.because Leaf node must have label
+	{
+		pFib->pLeftChild->is_NNC_area=false;
+		pFib->pRightChild->is_NNC_area=false;
 		pFib->is_NNC_area=true;
-		return true;
 	}
+	return newReturn;
 }
 
 void Fib::NsNoChange_common_select(FibTrie *pFib,int oldHop,int newHop)
 {
-	bool oldHopIn,newHopIn;
+	if(NULL==pFib)
+		return ;
 	if(oldHop==newHop)
 		return ;
-	oldHopIn=ifcontainFunc(oldHop,pFib->pNextHop);
-	newHopIn=ifcontainFunc(newHop,pFib->pNextHop);
-	if(pFib->intersection)
-	{
-		if(!oldHopIn&&newHopIn)
-		{
-			if(pFib->iNewPort!=newHop)
-				NsNoChange_standard_select(pFib,pFib->iNewPort,newHop);
-			pFib->iNewPort=EMPTYHOP;
-			return ;
-		}
-		else if(!oldHopIn&&!newHopIn)
-			return ;
-		else if(oldHopIn&&newHopIn)
-		{
-			NsNoChange_standard_select(pFib,oldHop,newHop);
-			return ;
-		}
-		else
-		{
-			pFib->iNewPort=oldHop;
-			return ;
-		}
-	}
-	else
-	{
-		if(!oldHopIn&&newHopIn)
-		{
-			FibTrie *subTrieOfnewHop=NNC_SS_search(pFib,newHop);
-			if(subTrieOfnewHop->iNewPort!=newHop)
-				NsNoChange_standard_select(subTrieOfnewHop,subTrieOfnewHop->iNewPort,newHop);
-			subTrieOfnewHop->iNewPort=EMPTYHOP;
-			return ;
-		}
-		else if(!oldHopIn&&!newHopIn)
-			return ;
-		else if(oldHopIn&&newHopIn)
-		{
-			NNC_SS_Double_search(pFib,oldHop,newHop);
-			return ;
-		}
-		else
-		{
-			FibTrie *subTrieOfnewHop=NNC_SS_search(pFib,oldHop);
-			subTrieOfnewHop->iNewPort=oldHop;
-			return ;
-		}
-	}
+	int inheritOldHopFib=oldHop,inheritNewHopFib=newHop;
+	RecursiveSelect(pFib,inheritOldHopFib,inheritNewHopFib);
+	NsNoChange_common_select(pFib->pLeftChild,inheritOldHopFib,inheritNewHopFib);
+	NsNoChange_common_select(pFib->pRightChild,inheritOldHopFib,inheritNewHopFib);
 }  
 
-void Fib::NsNoChange_standard_select(FibTrie *pFib,int oldHop,int newHop)
+void Fib::RecursiveSelect(FibTrie *pFib,int &inheritOldHopFib,int &inheritNewHopFib)
 {
-	NNC_SS_Double_search(pFib->pLeftChild,oldHop,newHop);
-	NNC_SS_Double_search(pFib->pRightChild,oldHop,newHop);
-}
-
-FibTrie* Fib::NNC_SS_search(FibTrie *pFibRoot,int iNextHop)
-{
-	FibTrie *pTrie=pFibRoot;
-	while(pTrie->intersection==false)
+	bool clear=true;
+	if(pFib->iNewPort!=EMPTYHOP)
+		inheritOldHopFib=pFib->iNewPort;
+	if(!ifcontainFunc(inheritNewHopFib,pFib->pNextHop))
 	{
-		if(ifcontainFunc(iNextHop,pTrie->pLeftChild->pNextHop))
-			pTrie=pTrie->pLeftChild;
-		else
-			pTrie=pTrie->pRightChild;
+		int selectHop=priority_select(pFib->iNewPort,inheritOldHopFib,pFib->pNextHop);
+		pFib->iNewPort=selectHop;
+		inheritNewHopFib=selectHop;
+		clear=false;
 	}
-	return pTrie;
+	if(clear)
+		pFib->iNewPort=EMPTYHOP;
 }
-
-void Fib::NNC_SS_Double_search(FibTrie *pFibRoot,int oldInheritHop,int newInheritHop)
-{
-	FibTrie *pOldTrie,*pNewTrie;
-	pOldTrie=NNC_SS_search(pFibRoot,oldInheritHop);
-	pNewTrie=NNC_SS_search(pFibRoot,newInheritHop);
-	if(pOldTrie==pNewTrie)
-		NsNoChange_standard_select(pNewTrie,oldInheritHop,newInheritHop);
-	else
-	{
-		pOldTrie->iNewPort=oldInheritHop;
-		if(pNewTrie->iNewPort!=newInheritHop)
-			NsNoChange_standard_select(pNewTrie,pNewTrie->iNewPort,newInheritHop);
-		pNewTrie->iNewPort=EMPTYHOP;
-	}
-}
-
 int Fib::priority_select(int oldSelect,int oldInherit,NextHop *ptmp)
 {
 	if(EMPTYHOP!=oldSelect)
@@ -447,6 +358,5 @@ FibTrie* Fib::withdrawLeaf(FibTrie *pFib,int upLevel)
 	FreeSubTree(pTrie->pRightChild);
 	pTrie->pLeftChild=NULL;
 	pTrie->pRightChild=NULL;
-	pTrie->intersection=true;
 	return pTrie;
 }
