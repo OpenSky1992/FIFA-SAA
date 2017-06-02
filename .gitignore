@@ -4,4 +4,5 @@ Data/
 others/
 *~
 *\.vim
+*\.swp
 tags
