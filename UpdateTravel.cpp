@@ -223,14 +223,8 @@ void UpdateTravel::withdrawTravel(char *travelPath)
 	else
 	{
 		m_pWithdraw->isLeaf=false;
-		if(pLastVisitRib->iNextHop==EMPTYHOP)
-			m_pWithdraw->isEmpty=true;
-		else
-		{
-			m_pWithdraw->oldHop=pLastVisitRib->iNextHop;
-			m_pWithdraw->isEmpty=false;
-			pLastVisitRib->iNextHop=EMPTYHOP;
-		}
+		m_pWithdraw->oldHop=pLastVisitRib->iNextHop;
+		pLastVisitRib->iNextHop=EMPTYHOP;
 		m_pWithdraw->pLastRib=pLastVisitRib;
 	}
 	m_pWithdraw->pLastFib=pLastVisitFib;

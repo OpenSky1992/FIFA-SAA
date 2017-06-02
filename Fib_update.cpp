@@ -127,14 +127,13 @@ void Fib::updateWithdraw(WithdrawInfo *info)
 	else
 	{
 		RibTrie *pLastRib=info->pLastRib;
-		if(!info->isEmpty)
-			if(info->oldHop==inherit)
-			{
-				#if STATISTICS_PERFORMANCE
-					m_pUpdateStat->W_inherit++;
-				#endif
-				return ;
-			}
+		if(info->oldHop==inherit)
+		{
+			#if STATISTICS_PERFORMANCE
+				m_pUpdateStat->W_inherit++;
+			#endif
+			return ;
+		}
 		if(updateGoDown_Merge(pLastRib,pLastFib,inherit))
 		{
 			pLastFib->is_NNC_area=false;

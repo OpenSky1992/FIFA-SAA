@@ -18,6 +18,7 @@
 #include <string>
 #include <unordered_map>
 #include <cstdlib>
+#include <string.h>
 
 
 typedef long long BitMap[BITMAPLENGTH];
@@ -72,7 +73,6 @@ class WithdrawInfo
 {
 public:
 	bool				isLeaf;					//is leaf node
-	bool				isEmpty;				//only for non-terminal node
 	int					inheritHop;				//inherit hop
 	int					oldHop;					//old hop
 	int					outNumber;				//only for terminal node
