@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <string>
 #include <unordered_map>
+#include <string.h>
 
 //The defination of linklist Nexhop
 struct NextHop{
@@ -57,7 +58,6 @@ class WithdrawInfo
 {
 public:
 	bool				isLeaf;					//is leaf node
-	bool				isEmpty;				//only for non-terminal node
 	int					inheritHop;				//inherit hop
 	int					oldHop;					//old hop
 	int					outNumber;				//only for terminal node
@@ -108,7 +108,7 @@ public:
 	int		W_true_goDown;
 };
 
-class UpdateTotalStatistic
+class UpdateTotalStatistic:public StatisticModule
 {
 public:
 	UpdateTotalStatistic();
